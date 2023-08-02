@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package nexus.rpc.api.nexusservice.v1;
+
+import "google/api/field_behavior.proto";
+import "nexus/rpc/api/common/v1/common.proto";
+import "nexus/rpc/api/result/v1/result.proto";
+
+option go_package = "github.com/nexus-rpc/sdk-go/nexusapi/nexusservice/v1;nexusservice";
+option java_package = "nexus.rpc.api.nexusservice.v1";
+option java_outer_classname = "RequestResponseProto";
+option java_multiple_files = true;
+
+// Start an operation by type and input.
+message StartOperationRequest {
+  // Name of the service of this operation.
+  // When exposed over HTTP, service is be part of the URL.
+  // When exposed over gRPC, service will be part of the request body. It should be noted that a proxy would need to
+  // read and decode the request body in order to extract the service, which can potentially be an expensive operation.
+  string service = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // Name of the operation.
+  string operation = 2 [(google.api.field_behavior) = REQUIRED];
+
+  map<string, nexus.rpc.api.common.v1.HeaderValues> headers = 3 [(google.api.field_behavior) = OPTIONAL];
+
+  // Optional identifier that may be used to to reference this operation, e.g. to cancel it.
+  // If not provided, and the operation completes asynchronously, the handler will allocate an ID in the response.
+  string operation_id = 4 [(google.api.field_behavior) = OPTIONAL];
+
+  // Opaque request input.
+  // The content type and encoding of this input may be provided via request headers.
+  bytes body = 5 [(google.api.field_behavior) = OPTIONAL];
+
+  // Optional callback URL.
+  // If this operation is asynchronous and the handler supports callbacks, the handler should call this URL when the
+  // operation's result (succeeded, failed, canceled) becomes available.
+  string callback_uri = 6 [(google.api.field_behavior) = OPTIONAL];
+}
+
+message StartOperationResponse {
+  // The operation has been started and will complete asynchronously.
+  // Use the other NexusService methods to cancel it or get its status or result.
+  message Started {
+    map<string, nexus.rpc.api.common.v1.HeaderValues> headers = 1;
+
+    // Identifier that may be used to to reference this operation, e.g. to cancel it.
+    string operation_id = 2;
+
+    // If the request specified a callback_uri and the handler supports callbacks for this operation, this flag will
+    // be set.
+    // It is up to the caller to decided how to get the outcome of this call in case the handler does not support
+    // callbacks.
+    bool callback_uri_supported = 3;
+  }
+
+  // Embedded Result variants in addition to the asynchronous `Started` result.
+  // Embedding was chosen over wrapping to keep this field flat.
+  oneof result {
+    Started started = 1;
+    nexus.rpc.api.result.v1.Succeeded succeeded = 2;
+    nexus.rpc.api.result.v1.Failed failed = 3;
+    nexus.rpc.api.result.v1.Canceled canceled = 4;
+  }
+}

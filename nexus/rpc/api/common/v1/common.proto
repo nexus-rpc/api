@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package nexus.rpc.api.common.v1;
+
+option go_package = "github.com/nexus-rpc/sdk-go/nexusapi/common/v1;common";
+option java_package = "nexus.rpc.api.common.v1";
+option java_outer_classname = "CommonProto";
+option java_multiple_files = true;
+
+message HeaderValues {
+  repeated string elements = 1;
+}
+

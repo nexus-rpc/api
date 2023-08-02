@@ -1,0 +1,11 @@
+- included_paths:
+    - "**/*.proto"
+  disabled_rules:
+    - "core::0192::has-comments"
+    - "core::0127::resource-name-extraction"
+    - "core::0136::http-uri-suffix"
+
+- included_paths:
+    - "dependencies/gogoproto/gogo.proto"
+  disabled_rules:
+    - "all"

@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package nexus.rpc.api.result.v1;
+
+import "nexus/rpc/api/common/v1/common.proto";
+
+option go_package = "github.com/nexus-rpc/sdk-go/nexusapi/result/v1;result";
+option java_package = "nexus.rpc.api.result.v1";
+option java_outer_classname = "ResultProto";
+option java_multiple_files = true;
+
+message Succeeded {
+  map<string, nexus.rpc.api.common.v1.HeaderValues> headers = 1;
+
+  bytes body = 2;
+}
+
+message Failed {
+  map<string, nexus.rpc.api.common.v1.HeaderValues> headers = 1;
+
+  bytes body = 2;
+  // TODO: should we have built-in codes here? It could be useful when we translate to HTTP.
+  bool retryable = 3;
+}
+
+message Canceled {
+  map<string, nexus.rpc.api.common.v1.HeaderValues> headers = 1;
+  // Details of the cancelation.
+  // TODO: do we want a message as string here?
+  // Do we need details at all?
+  bytes body = 2;
+}
+
+message Result {
+  // A result may be succeeded | failed| canceled.
+  // Note that these variants are duplicated in StartOperationResponse.
+  oneof variant {
+    Succeeded succeeded = 2;
+    Failed failed = 3;
+    Canceled canceled = 4;
+  }
+}

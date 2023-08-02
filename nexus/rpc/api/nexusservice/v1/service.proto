@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package nexus.rpc.api.nexusservice.v1;
+
+import "google/api/annotations.proto";
+import "nexus/rpc/api/nexusservice/v1/request_response.proto";
+
+option go_package = "github.com/nexus-rpc/sdk-go/nexusapi/nexusservice/v1;nexusservice";
+option java_package = "nexus.rpc.api.nexusservice.v1";
+option java_outer_classname = "ServiceProto";
+option java_multiple_files = true;
+
+service NexusService {
+  // Start an arbirary length operation.
+  // The response of the operation may be delivered synchronously - inline, or asynchronously, via a provided callback.
+  rpc StartOperation (StartOperationRequest) returns (StartOperationResponse) {
+    option (google.api.http) = {
+      post: "/v1/services/{service}/operations/{operation}"
+      body: "*"
+    };
+  }
+}

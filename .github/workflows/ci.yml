@@ -1,0 +1,46 @@
+name: Continuous Integration
+
+on: # rebuild any PRs and main branch changes
+  pull_request:
+  push:
+    branches:
+      - main
+      - "releases/*"
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  lint-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        # Verify scripts run on any OS
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        # TODO: GH cache got messed up, need to figure out how to bump this version
+        # with:
+        #   go-version: 1.20
+      - name: Install protoc
+        uses: arduino/setup-protoc@v2
+        with:
+          version: "23.x"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build CLI
+        run: go build -o ${{ startsWith(matrix.os, 'windows-') && 'scripts.exe' || './scripts' }} ./cmd
+      - name: Download tool dependencies
+        run: ${{ env.SCRIPTS }} install-deps
+        env:
+          SCRIPTS: ${{ startsWith(matrix.os, 'windows-') && 'start scripts.exe' || './scripts' }}
+      - name: Lint
+        run: ${{ env.SCRIPTS }} lint
+        env:
+          SCRIPTS: ${{ startsWith(matrix.os, 'windows-') && 'start scripts.exe' || './scripts' }}
+      - name: Test
+        run: ${{ env.SCRIPTS }} test
+        env:
+          SCRIPTS: ${{ startsWith(matrix.os, 'windows-') && 'start scripts.exe' || './scripts' }}
