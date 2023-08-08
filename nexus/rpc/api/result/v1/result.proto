@@ -31,7 +31,7 @@ message Canceled {
   bytes body = 2;
 }
 
-message Result {
+message OperationResult {
   // A result may be succeeded | failed| canceled.
   // Note that these variants are duplicated in StartOperationResponse.
   oneof variant {

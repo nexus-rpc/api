@@ -63,3 +63,67 @@ message StartOperationResponse {
     nexus.rpc.api.result.v1.Canceled canceled = 4;
   }
 }
+
+message CancelOperationRequest {
+  // Name of the service of this operation.
+  string service = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // Name of the operation.
+  string operation = 2 [(google.api.field_behavior) = REQUIRED];
+
+  // Identifier of the operation, either as provided by the caller in the StartOperationRequest or returned by the
+  // handler in StartOperationResponse.
+  string operation_id = 3 [(google.api.field_behavior) = REQUIRED];
+
+  map<string, nexus.rpc.api.common.v1.HeaderValues> headers = 4 [(google.api.field_behavior) = OPTIONAL];
+}
+
+message CancelOperationResponse {
+}
+
+message GetOperationResultRequest {
+  // Name of the service of this operation.
+  string service = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // Name of the operation.
+  string operation = 2 [(google.api.field_behavior) = REQUIRED];
+
+  // Identifier of the operation, either as provided by the caller in the StartOperationRequest or returned by the
+  // handler in StartOperationResponse.
+  string operation_id = 3 [(google.api.field_behavior) = REQUIRED];
+
+  map<string, nexus.rpc.api.common.v1.HeaderValues> headers = 4 [(google.api.field_behavior) = OPTIONAL];
+
+  // Whether to wait until a result is available or to immediately return an empty response.
+  // The handler should wait until just before the request deadline exceeds.
+  bool wait = 5 [(google.api.field_behavior) = OPTIONAL];
+}
+
+message GetOperationInfoRequest {
+  // Name of the service of this operation.
+  string service = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // Name of the operation.
+  string operation = 2 [(google.api.field_behavior) = REQUIRED];
+
+  // Identifier of the operation, either as provided by the caller in the StartOperationRequest or returned by the
+  // handler in StartOperationResponse.
+  string operation_id = 3 [(google.api.field_behavior) = REQUIRED];
+
+  map<string, nexus.rpc.api.common.v1.HeaderValues> headers = 4 [(google.api.field_behavior) = OPTIONAL];
+}
+
+message OperationInfo {
+  // State of the operation
+  nexus.rpc.api.common.v1.OperationState state = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message DeliverResultRequest {
+  // Completion token as provided via StartOperationRequest.callback_uri.
+  string token = 1 [(google.api.field_behavior) = REQUIRED];
+  // Result of the operation.
+  nexus.rpc.api.result.v1.OperationResult result = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeliverResultResponse {
+}

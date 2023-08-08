@@ -11,3 +11,10 @@ message HeaderValues {
   repeated string elements = 1;
 }
 
+enum OperationState {
+  OPERATION_STATE_UNSPECIFIED = 0;
+  OPERATION_STATE_RUNNING = 1;
+  OPERATION_STATE_COMPLETED = 2;
+  OPERATION_STATE_FAILED = 3;
+  OPERATION_STATE_CANCELED = 4;
+}

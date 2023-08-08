@@ -4,6 +4,7 @@ package nexus.rpc.api.nexusservice.v1;
 
 import "google/api/annotations.proto";
 import "nexus/rpc/api/nexusservice/v1/request_response.proto";
+import "nexus/rpc/api/result/v1/result.proto";
 
 option go_package = "github.com/nexus-rpc/sdk-go/nexusapi/nexusservice/v1;nexusservice";
 option java_package = "nexus.rpc.api.nexusservice.v1";
@@ -15,7 +16,45 @@ service NexusService {
   // The response of the operation may be delivered synchronously - inline, or asynchronously, via a provided callback.
   rpc StartOperation (StartOperationRequest) returns (StartOperationResponse) {
     option (google.api.http) = {
-      post: "/v1/services/{service}/operations/{operation}"
+      post: "/api/v1/services/{service}/operations/{operation}/start"
+      body: "body"
+      additional_bindings {
+        post: "/api/v1/services/{service}/operations/{operation}/{operation_id}/start"
+        body: "body"
+      }
+    };
+  }
+
+  // Request to cancel an operation.
+  // The operation may be canceled or resolved with any other Result asynchronously.
+  // Handlers _should_ ignore multiple cancelations of the same operation and return successfully if the operation was
+  // already canceled.
+  rpc CancelOperation (CancelOperationRequest) returns (CancelOperationResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/services/{service}/operations/{operation}/{operation_id}/cancel"
+    };
+  }
+
+  // Get the result of an operation.
+  // If a result is not ready yet, either long poll and wait for one to be available or return an empty response.
+  rpc GetOperationResult (GetOperationResultRequest) returns (nexus.rpc.api.result.v1.OperationResult) {
+    option (google.api.http) = {
+      get: "/api/v1/services/{service}/operations/{operation}/{operation_id}/result"
+    };
+  }
+
+  // Get information about an operation.
+  rpc GetOperationInfo (GetOperationInfoRequest) returns (OperationInfo) {
+    option (google.api.http) = {
+      get: "/api/v1/services/{service}/operations/{operation}/{operation_id}/info"
+    };
+  }
+
+  // Deliver the result of an operation
+  rpc DeliverResult (DeliverResultRequest) returns (DeliverResultResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/callback"
+      // TODO: only the result body should be in the body
       body: "*"
     };
   }

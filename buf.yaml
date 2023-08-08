@@ -5,5 +5,7 @@ breaking:
 lint:
   use:
     - DEFAULT
+  except:
+    - RPC_RESPONSE_STANDARD_NAME
   ignore:
     - google

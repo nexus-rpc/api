@@ -1,9 +1,15 @@
 - included_paths:
     - "**/*.proto"
   disabled_rules:
-    - "core::0192::has-comments"
     - "core::0127::resource-name-extraction"
+    - "core::0131::method-signature"
+    - "core::0131::http-uri-name"
+    - "core::0131::request-name-required"
+    - "core::0131::request-required-fields"
+    - "core::0131::request-unknown-fields"
+    - "core::0136::http-body"
     - "core::0136::http-uri-suffix"
+    - "core::0192::has-comments"
 
 - included_paths:
     - "dependencies/gogoproto/gogo.proto"
