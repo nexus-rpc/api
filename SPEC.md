@@ -14,24 +14,9 @@ is ready.
 
 An operation is addressed using three components:
 
-- [Service Name](#service-name)
+- The containing service, a URL prefix (e.g. `http://api.mycompany.com/v1/myservice/`)
 - [Operation Name](#operation-name)
 - [Operation ID](#operation-id)
-
-> **Note:** More details regarding IDs will be provided upon finalizing the ID proposal.
-
-### Service Name
-
-Service names:
-
-- MUST not be empty.
-- MUST consist of only unreserved URL characters as delineated in [RFC3986 Section 2.3][rfc3986-section-2.3].
-
-Valid characters include:
-
-```
-ALPHA / DIGIT / "-" / "." / "_" / "~"
-```
 
 ### Operation Name
 
@@ -48,6 +33,8 @@ ALPHA / DIGIT / "-" / "." / "_" / "~"
 
 ### Operation ID
 
+A handler assigned identifier, returned from a [Start Operation](#start-operation) call.
+
 Operation IDs:
 
 - MUST not be empty.
@@ -63,57 +50,43 @@ ALPHA / DIGIT / "-" / "." / "_" / "~"
 
 ### Failure
 
-The `Failure` object represents outcomes that are `failed` or `canceled`. The object MUST adhere to the following JSON
-schema:
+The `Failure` object represents protocol level failures returned in non successful HTTP responses as well as `failed` or
+`canceled` operation results. The object MUST adhere to the following JSON schema:
 
 ```yaml
 type: object
 properties:
   message:
     type: string
-  details:
+    description: A simple text message.
+
+  metadata:
     type: object
+    additionalProperties:
+      type: string
+    description: |
+      A key-value mapping for additional context. Useful for decoding the 'details' field, if needed. For example, to
+      indicate base64 encoded data in 'details', set metadata["Content-Transfer-Encoding"] to 'base64'.
+
+  details:
+    type: any
     properties:
-      metadata:
-        type: object
-        additionalProperties:
-          type: string
-        description: |
-          String to string mapping, may contain information for decoding the data field.
-      data:
-        type: string
-        description: |
-          Arbitrary string-encoded data; use encodings like base64 for binary data transmission.
-```
-
-### OperationStarted
-
-An `OperationStarted` object indicates the commencement of an asynchronous operation. This object MUST follow the given
-JSON schema:
-
-```yaml
-type: object
-properties:
-  operationId:
-    type: string
     description: |
-      An identifier for referencing this operation. If provided in the start request, it is echoed back.
-  callbackUrlSupported:
-    type: boolean
-    description: |
-      If the request specified a callback_url and the handler supports callbacks for this operation, this flag will be
-      set.
-      It is up to the caller to decided how to get the outcome of this call in case the handler does not support
-      callbacks.
+      Additional structured data. If this is byte data, it should be base64 encoded.
 ```
 
 ### OperationInfo
 
-The `OperationInfo` object, retrieved from the get operation info API, MUST adhere to the given schema:
+The `OperationInfo` object MUST adhere to the given schema:
 
 ```yaml
 type: object
 properties:
+  id:
+    type: string
+    description: |
+      An identifier for referencing this operation.
+
   state:
     enum:
       - succeeded
@@ -128,22 +101,23 @@ properties:
 
 ### Start Operation
 
-Start an arbirary length operation.
+Start an arbitrary length operation.
 The response of the operation may be delivered synchronously (inline), or asynchronously, via a provided callback or the
 [Get Operation Result](#get-operation-result) endpoint.
 
-#### Paths
+**Path**: `/{operation}`
 
-- `/api/v1/services/{service}/operations/{operation}`
-- `/api/v1/services/{service}/operations/{operation}/{operation_id}`
-
-#### Method
-
-`POST`
+**Method**: `POST`
 
 #### Query Parameters
 
-- `callback_url`: Optional. If the operation is asynchronous and the handler supports callbacks, it should invoke this URL once the operation's result is available.
+- `callback_url`: Optional. If the operation is asynchronous, the handler should invoke this URL once the operation's
+  result is available.
+
+#### Request Headers
+
+- `Nexus-Request-Id`: Unique ID used to dedupe starts. Callers MUST not reuse request IDs to start operations with
+  different inputs. Handlers MUST reject requests that map to the same operation with different request IDs.
 
 #### Request Body
 
@@ -159,13 +133,13 @@ The body may contain arbitrary data. Headers should specify content type and enc
 
   **Body**: Arbitrary data conveying the operation's result. Headers should specify content type and encoding.
 
-- `204 No Content`: Operation completed successfully with an empty result.
+- `201 Created`: Operation was started and will complete asynchronously.
 
   **Headers**:
 
-  - `Nexus-Operation-State: succeeded`
+  - `Content-Type: application/json`
 
-  **Body**: Empty.
+  **Body**: A JSON serialized [`OperationInfo`](#operationinfo) object.
 
 - `482 Operation Failed`: Operation completed as `failed` or `canceled`.
 
@@ -176,13 +150,13 @@ The body may contain arbitrary data. Headers should specify content type and enc
 
   **Body**: A JSON serialized [`Failure`](#failure) object.
 
-- `201 Created`: Operation was started an will completed asynchronously.
+- `409 Conflict`: This operation was already started with a different request ID.
 
   **Headers**:
 
   - `Content-Type: application/json`
 
-  **Body**: A JSON serialized [`OperationStarted`](#operationstarted) object.
+  **Body**: A JSON serialized [`Failure`](#failure) object.
 
 ### Cancel Operation
 
@@ -191,41 +165,44 @@ The operation may later complete as canceled or any other outcome.
 Handlers should ignore multiple cancelations of the same operation and return successfully if cancelation was already
 requested.
 
-#### Method
+**Path**: `/{operation}/{operation_id}/cancel`
 
-`POST`
-
-#### Paths
-
-- `/api/v1/services/{service}/operations/{operation}/{operation_id}/cancel`
+**Method**: `POST`
 
 #### Response Codes
 
 - `202 Accepted`: Cancelation request accepted.
 
-  **Body**: Unspecified.
+  **Body**: Empty.
 
 - `404 Not Found`: Operation ID not recognized or references deleted.
 
-  **Body**: Unspecified.
+  **Headers**:
+
+  - `Content-Type: application/json`
+
+  **Body**: A JSON serialized [`Failure`](#failure) object.
 
 ### Get Operation Result
 
 Retrieve operation result.
 
-#### Method
+**Path**: `/{operation}/{operation_id}/result`
 
-`GET`
-
-#### Paths
-
-- `/api/v1/services/{service}/operations/{operation}/{operation_id}/result`
+**Method**: `GET`
 
 #### Query Parameters
 
-- `wait_deadline`: Optional. ISO 8601 date indicating the waiting period for a result.
-  If not specified, and the operation is still running, the request should resolve immediately with the current
-  operation status.
+- `wait`: Optional. Duration indicating the waiting period for a result, defaulting to no wait.
+  If by the end of the wait period the operation is still running, the request should resolve with a 204 status code
+  (see below).
+
+  Format of this parameter is number + unit, where unit can be `ms` for milliseconds, `s` for seconds, and `m` for
+  minutes. Examples:
+
+  - `100ms`
+  - `1m`
+  - `5s`
 
 #### Response Codes
 
@@ -239,9 +216,11 @@ Retrieve operation result.
 
 - `204 No Content`: Operation completed successfully with an empty result or is still running.
 
+  When waiting for completion, the caller may re-issue this request to start a new long poll.
+
   **Headers**:
 
-  - `Nexus-Operation-State: succeeded | running`
+  - `Nexus-Operation-State: running`
 
   **Body**: Empty.
 
@@ -254,27 +233,21 @@ Retrieve operation result.
 
   **Body**: A JSON serialized [`Failure`](#failure) object.
 
-- `408 Request Timeout`: The specified `wait_deadline` expired prior to operation completion.
-
-  The caller may re-issue this request to start a new long poll.
-
-  **Body**: Unspecified.
-
 - `404 Not Found`: Operation ID not recognized or references deleted.
 
-  **Body**: Unspecified.
+  **Headers**:
+
+  - `Content-Type: application/json`
+
+  **Body**: A JSON serialized [`Failure`](#failure) object.
 
 ### Get Operation Info
 
 Retrieve operation details.
 
-#### Method
+**Path**: `/{operation}/{operation_id}`
 
-`GET`
-
-#### Paths
-
-- `/api/v1/services/{service}/operations/{operation}/{operation_id}`
+**Method**: `GET`
 
 #### Response Codes
 
@@ -283,7 +256,6 @@ Retrieve operation details.
   **Headers**:
 
   - `Content-Type: application/json`
-  - `Nexus-Operation-State: failed | canceled`
 
   **Body**:
 
@@ -291,12 +263,16 @@ Retrieve operation details.
 
 - `404 Not Found`: Operation ID not recognized or references deleted.
 
+  **Headers**:
+
+  - `Content-Type: application/json`
+
+  **Body**: A JSON serialized [`Failure`](#failure) object.
+
 ## General Information on HTTP Response Codes
 
-The Nexus protocol follows standard HTTP practices:
-
-- `4xx` codes signify non-retryable framework-level errors.
-- `5xx` codes signify retryable framework-level errors.
+The Nexus protocol follows standard HTTP practices, response codes not specified here should be interpreted according to
+the HTTP specification.
 
 ## Callback URLs
 
@@ -306,19 +282,23 @@ Callers should ensure URLs contain sufficient information to correlate completio
 
 For invoking a callback URL:
 
+- Issue a POST request to the caller-provided URL.
 - Include the `Nexus-Operation-State` header.
 - If state is `succeeded`, deliver non-empty results in the body with corresponding `Content-*` headers.
-- If state is `failed` or `canceled`, content type should be `application/json` and the body must have a serialized [`Failure`](#failure) object.
+- If state is `failed` or `canceled`, content type should be `application/json` and the body must have a serialized
+  [`Failure`](#failure) object.
 - Upon successful completion delivery, the handler should reply with a `200 OK` status and an empty body.
 
 ### Security
 
-There's no enforced security for callback URLs.
-When starting an operation, callers may embed a signed token into the URL, which can be verified upon delivery of completion.
+There's no enforced security for callback URLs at this time. However, some specific Nexus server implementations may
+deliver additional details as headers or have other security requirements of the callback endpoint.
+When starting an operation, callers may embed a signed token into the URL, which can be verified upon delivery of
+completion.
 
 [rfc3986-section-2.3]: https://datatracker.ietf.org/doc/html/rfc3986#section-2.3
 
-### Q/A
+## Q/A
 
 1. What is the purpose of the `482 Operation Failed` response code? This is not a standard HTTP response code.
 
@@ -331,4 +311,4 @@ Non of the standard HTTP codes fit and we decided to define a custom status code
 2. What potential security concerns should be taken into consideration while implementing this protocol?
 
 Security is not part of this specification, but as this is a thin layer on top of HTTP, standard practices should be
-used to secure these APIs.
+used to secure these APIs. For securing callback URLs, see [Callback URLs > Security](#security).
