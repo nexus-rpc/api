@@ -18,33 +18,8 @@ An operation is addressed using three components:
 - [Operation Name](#operation-name)
 - [Operation ID](#operation-id)
 
-### Operation Name
-
-Operation names:
-
-- MUST not be empty.
-- MUST consist of only unreserved URL characters as delineated in [RFC3986 Section 2.3][rfc3986-section-2.3].
-
-Valid characters include:
-
-```
-ALPHA / DIGIT / "-" / "." / "_" / "~"
-```
-
-### Operation ID
-
-A handler assigned identifier, returned from a [Start Operation](#start-operation) call.
-
-Operation IDs:
-
-- MUST not be empty.
-- MUST consist of only unreserved URL characters as delineated in [RFC3986 Section 2.3][rfc3986-section-2.3].
-
-Valid characters include:
-
-```
-ALPHA / DIGIT / "-" / "." / "_" / "~"
-```
+Both the name and ID MUST not be empty and may contain any arbitrary character sequence as long as they're encoded into
+the URL.
 
 ## Schema Definitions
 
@@ -65,14 +40,13 @@ properties:
     additionalProperties:
       type: string
     description: |
-      A key-value mapping for additional context. Useful for decoding the 'details' field, if needed. For example, to
-      indicate base64 encoded data in 'details', set metadata["Content-Transfer-Encoding"] to 'base64'.
+      A key-value mapping for additional context. Useful for decoding the 'details' field, if needed.
 
   details:
     type: any
     properties:
     description: |
-      Additional structured data. If this is byte data, it should be base64 encoded.
+      Additional structured data.
 ```
 
 ### OperationInfo
@@ -111,13 +85,8 @@ The response of the operation may be delivered synchronously (inline), or asynch
 
 #### Query Parameters
 
-- `callback_url`: Optional. If the operation is asynchronous, the handler should invoke this URL once the operation's
+- `callback`: Optional. If the operation is asynchronous, the handler should invoke this URL once the operation's
   result is available.
-
-#### Request Headers
-
-- `Nexus-Request-Id`: Unique ID used to dedupe starts. Callers MUST not reuse request IDs to start operations with
-  different inputs. Handlers MUST reject requests that map to the same operation with different request IDs.
 
 #### Request Body
 
@@ -141,7 +110,7 @@ The body may contain arbitrary data. Headers should specify content type and enc
 
   **Body**: A JSON serialized [`OperationInfo`](#operationinfo) object.
 
-- `482 Operation Failed`: Operation completed as `failed` or `canceled`.
+- `424 Failed Dependency`: Operation completed as `failed` or `canceled`.
 
   **Headers**:
 
@@ -194,7 +163,7 @@ Retrieve operation result.
 #### Query Parameters
 
 - `wait`: Optional. Duration indicating the waiting period for a result, defaulting to no wait.
-  If by the end of the wait period the operation is still running, the request should resolve with a 204 status code
+  If by the end of the wait period the operation is still running, the request should resolve with a 412 status code
   (see below).
 
   Format of this parameter is number + unit, where unit can be `ms` for milliseconds, `s` for seconds, and `m` for
@@ -214,17 +183,17 @@ Retrieve operation result.
 
   **Body**: Arbitrary data conveying the operation's result. Headers should specify content type and encoding.
 
-- `204 No Content`: Operation completed successfully with an empty result or is still running.
-
-  When waiting for completion, the caller may re-issue this request to start a new long poll.
-
-  **Headers**:
-
-  - `Nexus-Operation-State: running`
+- `408 Request Timeout`: The server gave up waiting for operation completion. The request may be retried by the caller.
 
   **Body**: Empty.
 
-- `482 Operation Failed`: Operation completed as `failed` or `canceled`.
+- `412 Precondition Failed`: Operation still running.
+
+  When waiting for completion, the caller may re-issue this request to start a new long poll.
+
+  **Body**: Empty.
+
+- `424 Failed Dependency`: Operation completed as `failed` or `canceled`.
 
   **Headers**:
 
@@ -300,15 +269,7 @@ completion.
 
 ## Q/A
 
-1. What is the purpose of the `482 Operation Failed` response code? This is not a standard HTTP response code.
-
-In internal discussions, we determined that there's value in having a specific status code for denoting operation
-failures.
-We chose a 4xx code because it is not meant to be retried and can be used by standard HTTP libraries and tools to
-easier distinguish failure vs. success.
-Non of the standard HTTP codes fit and we decided to define a custom status code.
-
-2. What potential security concerns should be taken into consideration while implementing this protocol?
+1. What potential security concerns should be taken into consideration while implementing this protocol?
 
 Security is not part of this specification, but as this is a thin layer on top of HTTP, standard practices should be
 used to secure these APIs. For securing callback URLs, see [Callback URLs > Security](#security).
