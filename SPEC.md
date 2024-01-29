@@ -238,10 +238,33 @@ Retrieve operation details.
 
   **Body**: A JSON serialized [`Failure`](#failure) object.
 
-## General Information on HTTP Response Codes
+## Predefined Handler Errors
 
-The Nexus protocol follows standard HTTP practices, response codes not specified here should be interpreted according to
-the HTTP specification.
+For compatiblity of this HTTP spec with future transports, when a handler fails a request, it **should** use one of the
+following predefined error codes.
+
+| Name                 | Status Code | Description                                                                                                                      |
+| -------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `BAD_REQUEST`        | 400         | The server cannot or will not process the request due to an apparent client error.                                               |
+| `UNAUTHENTICATED`    | 401         | The client did not supply valid authentication credentials for this request.                                                     |
+| `UNAUTHORIZED`       | 403         | The caller does not have permission to execute the specified operation.                                                          |
+| `NOT_FOUND`          | 404         | The requested resource could not be found but may be available in the future. Subsequent requests by the client are permissible. |
+| `RESOURCE_EXHAUSTED` | 429         | Some resource has been exhausted, perhaps a per-user quota, or perhaps the entire file system is out of space.                   |
+| `INTERNAL`           | 500         | An internal error occured.                                                                                                       |
+| `NOT_IMPLEMENTED`    | 501         | The server either does not recognize the request method, or it lacks the ability to fulfill the request.                         |
+| `UNAVAILABLE`        | 503         | The service is currently unavailable.                                                                                            |
+| `DOWNSTREAM_ERROR`   | 520         | Used by gateways to report that a downstream server has responded with an error.                                                 |
+| `DOWNSTREAM_TIMEOUT` | 521         | Used by gateways to report that a request to a downstream server has timed out.                                                  |
+
+## General Purpose Headers
+
+### `Request-Timeout`
+
+Callers may specify the `Request-Timeout` header on all APIs to inform the handler how long they're willing to wait for
+a response.
+
+Format of this header value is number + unit, where unit can be `ms` for milliseconds, `s` for seconds, and `m` for
+minutes.
 
 ## Callback URLs
 
