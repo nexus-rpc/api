@@ -88,6 +88,14 @@ The response of the operation may be delivered synchronously (inline), or asynch
 - `callback`: Optional. If the operation is asynchronous, the handler should invoke this URL once the operation's
   result is available.
 
+#### Request Headers
+
+A client may attach arbitrary headers to the request.
+
+Headers that start with the `Nexus-Callback-` prefix are expected to be attached to the callback request when invoked by
+the handler. The callback request must strip away the `Nexus-Callback-` prefix. E.g if a Start Operation request
+includes a `Nexus-Callback-Token: some-token` header, the callback request would include a `Token: some-token` header.
+
 #### Request Body
 
 The body may contain arbitrary data. Headers should specify content type and encoding.
@@ -275,6 +283,8 @@ Callers should ensure URLs contain sufficient information to correlate completio
 For invoking a callback URL:
 
 - Issue a POST request to the caller-provided URL.
+- Include any callback headers supplied in the originating StartOperation request, stripping away the `Nexus-Callback-`
+  prefix.
 - Include the `Nexus-Operation-State` header.
 - If state is `succeeded`, deliver non-empty results in the body with corresponding `Content-*` headers.
 - If state is `failed` or `canceled`, content type should be `application/json` and the body must have a serialized
