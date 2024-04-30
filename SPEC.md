@@ -14,12 +14,13 @@ is ready.
 
 An operation is addressed using three components:
 
-- The containing service, a URL prefix (e.g. `http://api.mycompany.com/v1/myservice/`)
-- [Operation Name](#operation-name)
-- [Operation ID](#operation-id)
+- The containing endpoint, a URL prefix (e.g. `http://api.mycompany.com/services/`)
+- Service Name - A grouping of operations (e.g. `payments.v1`)
+- Operation Name - A unique name for the given (e.g. `charge`)
+- Operation ID - A unique ID assigned by the handler as a response to a [StartOperation](#start-operation) request.
 
-Both the name and ID MUST not be empty and may contain any arbitrary character sequence as long as they're encoded into
-the URL.
+The service name, operation name, and operation ID MUST not be empty and may contain any arbitrary character sequence as
+long as they're encoded into the URL.
 
 ## Schema Definitions
 
@@ -79,7 +80,7 @@ Start an arbitrary length operation.
 The response of the operation may be delivered synchronously (inline), or asynchronously, via a provided callback or the
 [Get Operation Result](#get-operation-result) endpoint.
 
-**Path**: `/{operation}`
+**Path**: `/{service}/{operation}`
 
 **Method**: `POST`
 
@@ -142,7 +143,7 @@ The operation may later complete as canceled or any other outcome.
 Handlers should ignore multiple cancelations of the same operation and return successfully if cancelation was already
 requested.
 
-**Path**: `/{operation}/{operation_id}/cancel`
+**Path**: `/{service}/{operation}/{operation_id}/cancel`
 
 **Method**: `POST`
 
@@ -164,7 +165,7 @@ requested.
 
 Retrieve operation result.
 
-**Path**: `/{operation}/{operation_id}/result`
+**Path**: `/{service}/{operation}/{operation_id}/result`
 
 **Method**: `GET`
 
@@ -222,7 +223,7 @@ Retrieve operation result.
 
 Retrieve operation details.
 
-**Path**: `/{operation}/{operation_id}`
+**Path**: `/{service}/{operation}/{operation_id}`
 
 **Method**: `GET`
 
