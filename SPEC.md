@@ -262,7 +262,6 @@ following predefined error codes.
 | `INTERNAL`           | 500         | An internal error occured.                                                                                                       |
 | `NOT_IMPLEMENTED`    | 501         | The server either does not recognize the request method, or it lacks the ability to fulfill the request.                         |
 | `UNAVAILABLE`        | 503         | The service is currently unavailable.                                                                                            |
-| `DOWNSTREAM_ERROR`   | 520         | Used by gateways to report that a downstream server has responded with an error.                                                 |
 | `DOWNSTREAM_TIMEOUT` | 521         | Used by gateways to report that a request to a downstream server has timed out.                                                  |
 
 ## General Purpose Headers
