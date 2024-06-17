@@ -253,7 +253,7 @@ For compatiblity of this HTTP spec with future transports, when a handler fails 
 following predefined error codes.
 
 | Name                 | Status Code | Description                                                                                                                      |
-| -------------------- |-------------| -------------------------------------------------------------------------------------------------------------------------------- |
+| -------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `BAD_REQUEST`        | 400         | The server cannot or will not process the request due to an apparent client error.                                               |
 | `UNAUTHENTICATED`    | 401         | The client did not supply valid authentication credentials for this request.                                                     |
 | `UNAUTHORIZED`       | 403         | The caller does not have permission to execute the specified operation.                                                          |
