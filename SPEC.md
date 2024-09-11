@@ -12,7 +12,7 @@ is ready.
 
 ## Operation Addressability
 
-An operation is addressed using three components:
+An operation is addressed using the following components:
 
 - The containing endpoint, a URL prefix (e.g. `http://api.mycompany.com/services/`)
 - Service Name - A grouping of operations (e.g. `payments.v1`)
@@ -262,7 +262,7 @@ following predefined error codes.
 | `INTERNAL`           | 500         | An internal error occured.                                                                                                       |
 | `NOT_IMPLEMENTED`    | 501         | The server either does not recognize the request method, or it lacks the ability to fulfill the request.                         |
 | `UNAVAILABLE`        | 503         | The service is currently unavailable.                                                                                            |
-| `DOWNSTREAM_TIMEOUT` | 520         | Used by gateways to report that a request to a downstream server has timed out.                                                  |
+| `UPSTREAM_TIMEOUT`   | 520         | Used by gateways to report that a request to an upstream server has timed out.                                                   |
 
 ## General Purpose Headers
 
