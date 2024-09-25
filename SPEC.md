@@ -278,6 +278,10 @@ the same way as the HTTP header `Link` described [here](https://developer.mozill
 
 Handlers and callers can specify links in different Nexus requests to associate an operation with arbitrary resources.
 
+Links must contain a `type` parameter that expresses how they should be parsed.
+
+**Example**: `Nexus-Link: <myscheme://somepath?k=v>; type="com.example.MyResource"
+
 ### `Request-Timeout`
 
 Callers may specify the `Request-Timeout` header on all APIs to inform the handler how long they're willing to wait for
