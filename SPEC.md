@@ -97,6 +97,10 @@ Headers that start with the `Nexus-Callback-` prefix are expected to be attached
 the handler. The callback request must strip away the `Nexus-Callback-` prefix. E.g if a Start Operation request
 includes a `Nexus-Callback-Token: some-token` header, the callback request would include a `Token: some-token` header.
 
+The `Nexus-Link` header field can be added to associate resources with the start request. A handler may attach these
+links as metadata to underlying resources to provide end-to-end observabililty. See the [`Nexus-Link`](#nexus-link)
+section for more information.
+
 #### Request Body
 
 The body may contain arbitrary data. Headers should specify content type and encoding.
@@ -111,7 +115,8 @@ The body may contain arbitrary data. Headers should specify content type and enc
 
   **Body**: Arbitrary data conveying the operation's result. Headers should specify content type and encoding.
 
-- `201 Created`: Operation was started and will complete asynchronously.
+- `201 Created`: Operation was started and will complete asynchronously. It may return `Nexus-Link` headers to associate
+  resources to this operation.
 
   **Headers**:
 
@@ -265,6 +270,13 @@ following predefined error codes.
 | `UPSTREAM_TIMEOUT`   | 520         | Used by gateways to report that a request to an upstream server has timed out.                                                   |
 
 ## General Purpose Headers
+
+### `Nexus-Link`
+
+The `Nexus-Link` header field provides a means for serializing one or more links in HTTP headers. This header is encoded
+the same way as the HTTP header `Link` described [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Link).
+
+Handlers and callers can specify links in different Nexus requests to associate an operation with arbitrary resources.
 
 ### `Request-Timeout`
 
