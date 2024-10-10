@@ -97,6 +97,10 @@ Headers that start with the `Nexus-Callback-` prefix are expected to be attached
 the handler. The callback request must strip away the `Nexus-Callback-` prefix. E.g if a Start Operation request
 includes a `Nexus-Callback-Token: some-token` header, the callback request would include a `Token: some-token` header.
 
+- `Operation-Timeout`: Callers may specify the `Operation-Timeout` header on requests to inform the handler how long
+  they're willing to wait for an operation to complete. Format of this header value is number + unit, where unit can be
+  `ms` for milliseconds, `s` for seconds, and `m` for minutes.
+
 #### Request Body
 
 The body may contain arbitrary data. Headers should specify content type and encoding.
@@ -271,14 +275,6 @@ following predefined error codes.
 
 Callers may specify the `Request-Timeout` header on all APIs to inform the handler how long they're willing to wait for
 a response.
-
-Format of this header value is number + unit, where unit can be `ms` for milliseconds, `s` for seconds, and `m` for
-minutes.
-
-### `Operation-Timeout`
-
-Callers may specify the `Operation-Timeout` header on StartOperation requests to inform the handler how long they're
-willing to wait for an operation to complete.
 
 Format of this header value is number + unit, where unit can be `ms` for milliseconds, `s` for seconds, and `m` for
 minutes.
