@@ -277,7 +277,7 @@ minutes.
 
 ### `Operation-Timeout`
 
-Callers may specify the `Operation-Timeout` header on StartOperation requests to inform the handler how long they're 
+Callers may specify the `Operation-Timeout` header on StartOperation requests to inform the handler how long they're
 willing to wait for an operation to complete.
 
 Format of this header value is number + unit, where unit can be `ms` for milliseconds, `s` for seconds, and `m` for
