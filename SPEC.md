@@ -12,7 +12,7 @@ is ready.
 
 ## Operation Addressability
 
-An operation is addressed using three components:
+An operation is addressed using the following components:
 
 - The containing endpoint, a URL prefix (e.g. `http://api.mycompany.com/services/`)
 - Service Name - A grouping of operations (e.g. `payments.v1`)
@@ -101,6 +101,10 @@ includes a `Nexus-Callback-Token: some-token` header, the callback request would
   they're willing to wait for an operation to complete. Format of this header value is number + unit, where unit can be
   `ms` for milliseconds, `s` for seconds, and `m` for minutes.
 
+The `Nexus-Link` header field can be added to associate resources with the start request. A handler may attach these
+links as metadata to underlying resources to provide end-to-end observabililty. See the [`Nexus-Link`](#nexus-link)
+section for more information.
+
 #### Request Body
 
 The body may contain arbitrary data. Headers should specify content type and encoding.
@@ -115,7 +119,8 @@ The body may contain arbitrary data. Headers should specify content type and enc
 
   **Body**: Arbitrary data conveying the operation's result. Headers should specify content type and encoding.
 
-- `201 Created`: Operation was started and will complete asynchronously.
+- `201 Created`: Operation was started and will complete asynchronously. It may return `Nexus-Link` headers to associate
+  resources to this operation.
 
   **Headers**:
 
@@ -266,10 +271,20 @@ following predefined error codes.
 | `INTERNAL`           | 500         | An internal error occured.                                                                                                       |
 | `NOT_IMPLEMENTED`    | 501         | The server either does not recognize the request method, or it lacks the ability to fulfill the request.                         |
 | `UNAVAILABLE`        | 503         | The service is currently unavailable.                                                                                            |
-| `DOWNSTREAM_ERROR`   | 520         | Used by gateways to report that a downstream server has responded with an error.                                                 |
-| `DOWNSTREAM_TIMEOUT` | 521         | Used by gateways to report that a request to a downstream server has timed out.                                                  |
+| `UPSTREAM_TIMEOUT`   | 520         | Used by gateways to report that a request to an upstream server has timed out.                                                   |
 
 ## General Purpose Headers
+
+### `Nexus-Link`
+
+The `Nexus-Link` header field provides a means for serializing one or more links in HTTP headers. This header is encoded
+the same way as the HTTP header `Link` described [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Link).
+
+Handlers and callers can specify links in different Nexus requests to associate an operation with arbitrary resources.
+
+Links must contain a `type` parameter that expresses how they should be parsed.
+
+**Example**: `Nexus-Link: <myscheme://somepath?k=v>; type="com.example.MyResource"
 
 ### `Request-Timeout`
 
