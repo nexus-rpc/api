@@ -99,9 +99,8 @@ includes a `Nexus-Callback-Token: some-token` header, the callback request would
 
 The `Operation-Timeout` header field can be added to inform the handler how long the caller is willing to wait for an
 operation to complete. This is distinct from the more general `Request-Timeout` header which is used to indicate the
-timeout for a single HTTP request. If the `Operation-Timeout` is shorter than the `Request-Timeout`, then
-`Request-Timeout` will be truncated to this value. Format of this header value is number + unit, where unit can be `ms`
-for milliseconds, `s` for seconds, and `m` for minutes.
+timeout for a single HTTP request. Format of this header value is number + unit, where unit can be `ms` for
+milliseconds, `s` for seconds, and `m` for minutes.
 
 The `Nexus-Link` header field can be added to associate resources with the start request. A handler may attach these
 links as metadata to underlying resources to provide end-to-end observabililty. See the [`Nexus-Link`](#nexus-link)
