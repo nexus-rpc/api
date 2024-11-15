@@ -103,7 +103,7 @@ timeout for a single HTTP request. Format of this header value is number + unit,
 milliseconds, `s` for seconds, and `m` for minutes.
 
 The `Nexus-Link` header field can be added to associate resources with the start request. A handler may attach these
-links as metadata to underlying resources to provide end-to-end observabililty. See the [`Nexus-Link`](#nexus-link)
+links as metadata to underlying resources to provide end-to-end observability. See the [`Nexus-Link`](#nexus-link)
 section for more information.
 
 #### Request Body
@@ -307,6 +307,8 @@ For invoking a callback URL:
 - Include any callback headers supplied in the originating StartOperation request, stripping away the `Nexus-Callback-`
   prefix.
 - Include the `Nexus-Operation-State` header.
+- Include the `Nexus-Operation-Id` header and any `Nexus-Link` headers for resources associated with this operation to
+  support completing asynchronous operations before the response to StartOperation is received.
 - If state is `succeeded`, deliver non-empty results in the body with corresponding `Content-*` headers.
 - If state is `failed` or `canceled`, content type should be `application/json` and the body must have a serialized
   [`Failure`](#failure) object.
