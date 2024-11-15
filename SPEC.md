@@ -308,9 +308,7 @@ For invoking a callback URL:
   prefix.
 - Include the `Nexus-Operation-Id` header, `Nexus-Operation-Start-Time` and any `Nexus-Link` headers for resources
   associated with this operation to support completing asynchronous operations before the response to StartOperation is
-  received.
-- Format for `Nexus-Operation-Start-Time` is number + unit, where unit can be `ms` for milliseconds, `s` for seconds,
-  and `m` for minutes. If it is omitted, operation start time will be the time the completion is received.
+  received. If `Nexus-Operation-Start-Time` is omitted, the time the completion is received will be used.
 - Include the `Nexus-Operation-State` header.
 - If state is `succeeded`, deliver non-empty results in the body with corresponding `Content-*` headers.
 - If state is `failed` or `canceled`, content type should be `application/json` and the body must have a serialized
