@@ -47,7 +47,7 @@ properties:
     type: any
     properties:
     description: |
-      Additional structured data.
+      Additional JSON serializable structured data.
 ```
 
 ### OperationInfo
