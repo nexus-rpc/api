@@ -6,9 +6,9 @@ The Nexus protocol, as specified below, is a synchronous RPC protocol. Arbitrary
 of a set of pre-defined synchronous RPCs.
 
 A Nexus **caller** calls a **handler**. The handler may respond inline or return a reference for a future, asynchronous
-operation. The caller can cancel an asynchronous operation, check for its outcome, or fetch its current state. The caller
-can also specify a callback URL, which the handler uses to asynchronously deliver the result of an operation when it
-is ready.
+operation. The caller can cancel an asynchronous operation, check for its outcome, or fetch its current state. The
+caller can also specify a callback URL, which the handler uses to asynchronously deliver the result of an operation when
+it is ready.
 
 ## Operation Addressability
 
@@ -76,9 +76,8 @@ properties:
 
 ### Start Operation
 
-Start an arbitrary length operation.
-The response of the operation may be delivered synchronously (inline), or asynchronously, via a provided callback or the
-[Get Operation Result](#get-operation-result) endpoint.
+Start an arbitrary length operation. The response of the operation may be delivered synchronously (inline), or
+asynchronously, via a provided callback or the [Get Operation Result](#get-operation-result) endpoint.
 
 **Path**: `/{service}/{operation}`
 
@@ -86,8 +85,8 @@ The response of the operation may be delivered synchronously (inline), or asynch
 
 #### Query Parameters
 
-- `callback`: Optional. If the operation is asynchronous, the handler should invoke this URL once the operation's
-  result is available.
+- `callback`: Optional. If the operation is asynchronous, the handler should invoke this URL once the operation's result
+  is available.
 
 #### Request Headers
 
@@ -148,10 +147,8 @@ The body may contain arbitrary data. Headers should specify content type and enc
 
 ### Cancel Operation
 
-Request to cancel an operation.
-The operation may later complete as canceled or any other outcome.
-Handlers should ignore multiple cancelations of the same operation and return successfully if cancelation was already
-requested.
+Request to cancel an operation. The operation may later complete as canceled or any other outcome. Handlers should
+ignore multiple cancelations of the same operation and return successfully if cancelation was already requested.
 
 **Path**: `/{service}/{operation}/{operation_id}/cancel`
 
@@ -181,9 +178,8 @@ Retrieve operation result.
 
 #### Query Parameters
 
-- `wait`: Optional. Duration indicating the waiting period for a result, defaulting to no wait.
-  If by the end of the wait period the operation is still running, the request should resolve with a 412 status code
-  (see below).
+- `wait`: Optional. Duration indicating the waiting period for a result, defaulting to no wait. If by the end of the
+  wait period the operation is still running, the request should resolve with a 412 status code (see below).
 
   Format of this parameter is number + unit, where unit can be `ms` for milliseconds, `s` for seconds, and `m` for
   minutes. Examples:
@@ -262,17 +258,20 @@ Retrieve operation details.
 For compatiblity of this HTTP spec with future transports, when a handler fails a request, it **should** use one of the
 following predefined error codes.
 
-| Name                 | Status Code | Description                                                                                                                      |
-| -------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `BAD_REQUEST`        | 400         | The server cannot or will not process the request due to an apparent client error.                                               |
-| `UNAUTHENTICATED`    | 401         | The client did not supply valid authentication credentials for this request.                                                     |
-| `UNAUTHORIZED`       | 403         | The caller does not have permission to execute the specified operation.                                                          |
-| `NOT_FOUND`          | 404         | The requested resource could not be found but may be available in the future. Subsequent requests by the client are permissible. |
-| `RESOURCE_EXHAUSTED` | 429         | Some resource has been exhausted, perhaps a per-user quota, or perhaps the entire file system is out of space.                   |
-| `INTERNAL`           | 500         | An internal error occured.                                                                                                       |
-| `NOT_IMPLEMENTED`    | 501         | The server either does not recognize the request method, or it lacks the ability to fulfill the request.                         |
-| `UNAVAILABLE`        | 503         | The service is currently unavailable.                                                                                            |
-| `UPSTREAM_TIMEOUT`   | 520         | Used by gateways to report that a request to an upstream server has timed out.                                                   |
+| Name                 | Status Code | Description                                                                                                                                                              |
+| -------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `BAD_REQUEST`        | 400         | The server cannot or will not process the request due to an apparent client error. Clients should not retry this request unless advised otherwise.                       |
+| `UNAUTHENTICATED`    | 401         | The client did not supply valid authentication credentials for this request. Clients should not retry this request unless advised otherwise.                             |
+|                      |             |                                                                                                                                                                          |
+| `UNAUTHORIZED`       | 403         | The caller does not have permission to execute the specified operation. Clients should not retry this request unless advised otherwise.                                  |
+|                      |             |                                                                                                                                                                          |
+| `NOT_FOUND`          | 404         | The requested resource could not be found but may be available in the future. Subsequent requests by the client are permissible but not advised.                         |
+|                      |             |                                                                                                                                                                          |
+| `RESOURCE_EXHAUSTED` | 429         | Some resource has been exhausted, perhaps a per-user quota, or perhaps the entire file system is out of space. Subsequent requests by the client are permissible.        |
+| `INTERNAL`           | 500         | An internal error occured. Clients should not retry this request unless advised otherwise.                                                                               |
+| `NOT_IMPLEMENTED`    | 501         | The server either does not recognize the request method, or it lacks the ability to fulfill the request. Clients should not retry this request unless advised otherwise. |
+| `UNAVAILABLE`        | 503         | The service is currently unavailable. Subsequent requests by the client are permissible.                                                                                 |
+| `UPSTREAM_TIMEOUT`   | 520         | Used by gateways to report that a request to an upstream server has timed out. Subsequent requests by the client are permissible.                                        |
 
 ## General Purpose Headers
 
@@ -285,7 +284,14 @@ Handlers and callers can specify links in different Nexus requests to associate 
 
 Links must contain a `type` parameter that expresses how they should be parsed.
 
-**Example**: `Nexus-Link: <myscheme://somepath?k=v>; type="com.example.MyResource"
+**Example**: `Nexus-Link: <myscheme://somepath?k=v>; type="com.example.MyResource"`
+
+### `Nexus-Request-Retryable`
+
+Handlers may specify the `Nexus-Request-Retryable` header to explicitly instruct a caller whether or not to retry a
+request. Unless specified, retry behavior is determined from the
+[predefined handler error type](#predefined-handler-errors). For example `INTERNAL` errors is not retryable by default
+unless specified otherwise.
 
 ### `Request-Timeout`
 
@@ -308,8 +314,9 @@ For invoking a callback URL:
   prefix.
 - Include the `Nexus-Operation-Id` header, `Nexus-Operation-Start-Time` and any `Nexus-Link` headers for resources
   associated with this operation to support completing asynchronous operations before the response to StartOperation is
-  received. `Nexus-Operation-Start-Time` should be in a valid HTTP format described [here](https://www.rfc-editor.org/rfc/rfc5322.html#section-3.3).
-  If is omitted, the time the completion is received will be used as operation start time.
+  received. `Nexus-Operation-Start-Time` should be in a valid HTTP format described
+  [here](https://www.rfc-editor.org/rfc/rfc5322.html#section-3.3). If is omitted, the time the completion is received
+  will be used as operation start time.
 - Include the `Nexus-Operation-State` header.
 - If state is `succeeded`, deliver non-empty results in the body with corresponding `Content-*` headers.
 - If state is `failed` or `canceled`, content type should be `application/json` and the body must have a serialized
@@ -319,9 +326,8 @@ For invoking a callback URL:
 ### Security
 
 There's no enforced security for callback URLs at this time. However, some specific Nexus server implementations may
-deliver additional details as headers or have other security requirements of the callback endpoint.
-When starting an operation, callers may embed a signed token into the URL, which can be verified upon delivery of
-completion.
+deliver additional details as headers or have other security requirements of the callback endpoint. When starting an
+operation, callers may embed a signed token into the URL, which can be verified upon delivery of completion.
 
 [rfc3986-section-2.3]: https://datatracker.ietf.org/doc/html/rfc3986#section-2.3
 
