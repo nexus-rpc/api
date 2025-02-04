@@ -17,10 +17,13 @@ An operation is addressed using the following components:
 - The containing endpoint, a URL prefix (e.g. `http://api.mycompany.com/services/`)
 - Service Name - A grouping of operations (e.g. `payments.v1`)
 - Operation Name - A unique name for the given (e.g. `charge`)
-- Operation ID - A unique ID assigned by the handler as a response to a [StartOperation](#start-operation) request.
+- Operation Token - A unique token assigned by the handler as a response to a [StartOperation](#start-operation)
+  request.
 
-The service name, operation name, and operation ID MUST not be empty and may contain any arbitrary character sequence as
-long as they're encoded into the URL.
+The service name and operation name MUST not be empty and may contain any arbitrary character sequence as long as
+they're encoded into the URL.
+
+An operation token MUST not be empty and contain only characters that are valid HTTP header values.
 
 ## Schema Definitions
 
@@ -57,10 +60,10 @@ The `OperationInfo` object MUST adhere to the given schema:
 ```yaml
 type: object
 properties:
-  id:
+  token:
     type: string
     description: |
-      An identifier for referencing this operation.
+      A token for referencing this operation.
 
   state:
     enum:
@@ -150,9 +153,14 @@ The body may contain arbitrary data. Headers should specify content type and enc
 Request to cancel an operation. The operation may later complete as canceled or any other outcome. Handlers should
 ignore multiple cancelations of the same operation and return successfully if cancelation was already requested.
 
-**Path**: `/{service}/{operation}/{operation_id}/cancel`
+**Path**: `/{service}/{operation}/cancel`
 
 **Method**: `POST`
+
+#### Request Headers
+
+The operation token received as a response to the Start Operation method must be delivered via the
+`Nexus-Operation-Token` header field.
 
 #### Response Codes
 
@@ -160,7 +168,7 @@ ignore multiple cancelations of the same operation and return successfully if ca
 
   **Body**: Empty.
 
-- `404 Not Found`: Operation ID not recognized or references deleted.
+- `404 Not Found`: Operation token not recognized or references deleted.
 
   **Headers**:
 
@@ -172,9 +180,14 @@ ignore multiple cancelations of the same operation and return successfully if ca
 
 Retrieve operation result.
 
-**Path**: `/{service}/{operation}/{operation_id}/result`
+**Path**: `/{service}/{operation}/result`
 
 **Method**: `GET`
+
+#### Request Headers
+
+The operation token received as a response to the Start Operation method must be delivered via the
+`Nexus-Operation-Token` header field.
 
 #### Query Parameters
 
@@ -217,7 +230,7 @@ Retrieve operation result.
 
   **Body**: A JSON serialized [`Failure`](#failure) object.
 
-- `404 Not Found`: Operation ID not recognized or references deleted.
+- `404 Not Found`: Operation token not recognized or references deleted.
 
   **Headers**:
 
@@ -229,9 +242,14 @@ Retrieve operation result.
 
 Retrieve operation details.
 
-**Path**: `/{service}/{operation}/{operation_id}`
+**Path**: `/{service}/{operation}`
 
 **Method**: `GET`
+
+#### Request Headers
+
+The operation token received as a response to the Start Operation method must be delivered via the
+`Nexus-Operation-Token` header field.
 
 #### Response Codes
 
@@ -245,7 +263,7 @@ Retrieve operation details.
 
   A JSON serialized [`OperationInfo`](#operationinfo) object.
 
-- `404 Not Found`: Operation ID not recognized or references deleted.
+- `404 Not Found`: Operation token not recognized or references deleted.
 
   **Headers**:
 
@@ -312,7 +330,7 @@ For invoking a callback URL:
 - Issue a POST request to the caller-provided URL.
 - Include any callback headers supplied in the originating StartOperation request, stripping away the `Nexus-Callback-`
   prefix.
-- Include the `Nexus-Operation-Id` header, `Nexus-Operation-Start-Time` and any `Nexus-Link` headers for resources
+- Include the `Nexus-Operation-Token` header, `Nexus-Operation-Start-Time` and any `Nexus-Link` headers for resources
   associated with this operation to support completing asynchronous operations before the response to StartOperation is
   received. `Nexus-Operation-Start-Time` should be in a valid HTTP format described
   [here](https://www.rfc-editor.org/rfc/rfc5322.html#section-3.3). If is omitted, the time the completion is received
