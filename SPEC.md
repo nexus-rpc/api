@@ -23,7 +23,8 @@ An operation is addressed using the following components:
 The service name and operation name MUST not be empty and may contain any arbitrary character sequence as long as
 they're encoded into the URL.
 
-An operation token MUST not be empty and contain only characters that are valid HTTP header values.
+An operation token MUST not be empty and contain only characters that are valid HTTP header values. When passing a token
+as part of a URL path make sure any special characters are encoded.
 
 ## Schema Definitions
 
@@ -159,8 +160,13 @@ ignore multiple cancelations of the same operation and return successfully if ca
 
 #### Request Headers
 
-The operation token received as a response to the Start Operation method must be delivered via the
-`Nexus-Operation-Token` header field.
+The operation token received as a response to the Start Operation method. Must be delivered either via the `token` query
+param or the `Nexus-Operation-Token` header field.
+
+#### Query Parameters
+
+- `token`: The operation token received as a response to the Start Operation method. Must be delivered either via the
+  `token` query param or the `Nexus-Operation-Token` header field.
 
 #### Response Codes
 
@@ -186,10 +192,13 @@ Retrieve operation result.
 
 #### Request Headers
 
-The operation token received as a response to the Start Operation method must be delivered via the
-`Nexus-Operation-Token` header field.
+The operation token received as a response to the Start Operation method. Must be delivered either via the `token` query
+param or the `Nexus-Operation-Token` header field.
 
 #### Query Parameters
+
+- `token`: The operation token received as a response to the Start Operation method. Must be delivered either via the
+  `token` query param or the `Nexus-Operation-Token` header field.
 
 - `wait`: Optional. Duration indicating the waiting period for a result, defaulting to no wait. If by the end of the
   wait period the operation is still running, the request should resolve with a 412 status code (see below).
@@ -248,8 +257,13 @@ Retrieve operation details.
 
 #### Request Headers
 
-The operation token received as a response to the Start Operation method must be delivered via the
-`Nexus-Operation-Token` header field.
+The operation token received as a response to the Start Operation method. Must be delivered either via the `token` query
+param or the `Nexus-Operation-Token` header field.
+
+#### Query Parameters
+
+- `token`: The operation token received as a response to the Start Operation method. Must be delivered either via the
+  `token` query param or the `Nexus-Operation-Token` header field.
 
 #### Response Codes
 
