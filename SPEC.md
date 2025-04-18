@@ -115,7 +115,8 @@ The body may contain arbitrary data. Headers should specify content type and enc
 
 #### Response Codes
 
-- `200 OK`: Operation completed successfully.
+- `200 OK`: Operation completed successfully. It may return `Nexus-Link` headers to associate resources with this
+  operation.
 
   **Headers**:
 
@@ -124,7 +125,7 @@ The body may contain arbitrary data. Headers should specify content type and enc
   **Body**: Arbitrary data conveying the operation's result. Headers should specify content type and encoding.
 
 - `201 Created`: Operation was started and will complete asynchronously. It may return `Nexus-Link` headers to associate
-  resources to this operation.
+  resources with this operation.
 
   **Headers**:
 
