@@ -364,6 +364,32 @@ operation, callers may embed a signed token into the URL, which can be verified 
 
 [rfc3986-section-2.3]: https://datatracker.ietf.org/doc/html/rfc3986#section-2.3
 
+## Content Types
+
+Nexus is not opinionated about request content types, although typically, inputs and outputs are transmitted as JSON
+with content type `application/json`. Other common types include nulls, where the content type is left empty, and byte
+buffers, with content type `application/octet-stream`.
+
+### Protocol Buffers
+
+[Protobuf](https://protobuf.dev/) messages support two serialization formats, binary, and JSON.
+
+The standard way to transmit binary serialized protos over Nexus is to attach the following `content-type` header:
+
+```
+application/x-protobuf; message-type=com.example.MyMessage
+```
+
+The standard way to transmit JSON serialized protos over Nexus is to attach the following `content-type` header:
+
+```
+application/json; format=protobuf; message-type=com.example.MyMessage
+```
+
+Note that in both cases, the message-type is the fully qualified proto message name. The message-type param is used to
+look up the message in the proto registry in languages that do not have runtime type information. Languages that do have
+support for runtime types, should validate that the message type in the header matches the value to deserialize into.
+
 ## Q/A
 
 1. What potential security concerns should be taken into consideration while implementing this protocol?
