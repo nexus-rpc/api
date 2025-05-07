@@ -301,7 +301,7 @@ following predefined error codes.
 | `NOT_FOUND`          | 404         | The requested resource could not be found but may be available in the future. Subsequent requests by the client are permissible but not advised.                         |
 |                      |             |                                                                                                                                                                          |
 | `RESOURCE_EXHAUSTED` | 429         | Some resource has been exhausted, perhaps a per-user quota, or perhaps the entire file system is out of space. Subsequent requests by the client are permissible.        |
-| `INTERNAL`           | 500         | An internal error occured. Clients should not retry this request unless advised otherwise.                                                                               |
+| `INTERNAL`           | 500         | An internal error occured. Subsequent requests by the client are permissible.                                                                                            |
 | `NOT_IMPLEMENTED`    | 501         | The server either does not recognize the request method, or it lacks the ability to fulfill the request. Clients should not retry this request unless advised otherwise. |
 | `UNAVAILABLE`        | 503         | The service is currently unavailable. Subsequent requests by the client are permissible.                                                                                 |
 | `UPSTREAM_TIMEOUT`   | 520         | Used by gateways to report that a request to an upstream server has timed out. Subsequent requests by the client are permissible.                                        |
