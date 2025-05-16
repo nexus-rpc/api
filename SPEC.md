@@ -2,13 +2,13 @@
 
 ## Overview
 
-The Nexus protocol, as specified below, is a synchronous RPC protocol. Arbitrary length operations are modelled on top
+The Nexus protocol, as specified below, is a synchronous RPC protocol. Arbitrary duration operations are modelled on top
 of a set of pre-defined synchronous RPCs.
 
-A Nexus **caller** calls a **handler**. The handler may respond inline or return a reference for a future, asynchronous
-operation. The caller can cancel an asynchronous operation, check for its outcome, or fetch its current state. The
-caller can also specify a callback URL, which the handler uses to asynchronously deliver the result of an operation when
-it is ready.
+A Nexus **caller** calls a **handler**. The handler may respond inline (synchronous response) or return a token
+referencing the ongoing operation (asynchronous response). The caller can cancel an asynchronous operation, check for
+its outcome, or fetch its current state. The caller can also specify a callback URL, which the handler uses to deliver
+the result of an asynchronous operation when it is ready.
 
 ## Operation Addressability
 
@@ -28,10 +28,12 @@ as part of a URL path make sure any special characters are encoded.
 
 ## Schema Definitions
 
+All schemas in this specification follow the [JSON Schema](https://json-schema.org/specification) specification.
+
 ### Failure
 
-The `Failure` object represents protocol level failures returned in non successful HTTP responses as well as `failed` or
-`canceled` operation results. The object MUST adhere to the following JSON schema:
+The `Failure` object represents protocol-level failures returned in non-successful HTTP responses, as well as `failed`
+or `canceled` operation results. The object MUST adhere to the following schema:
 
 ```yaml
 type: object
@@ -51,12 +53,12 @@ properties:
     type: any
     properties:
     description: |
-      Additional JSON serializable structured data.
+      Additional JSON-serializable structured data.
 ```
 
 ### OperationInfo
 
-The `OperationInfo` object MUST adhere to the given schema:
+The `OperationInfo` object MUST adhere to the following schema:
 
 ```yaml
 type: object
@@ -64,7 +66,7 @@ properties:
   token:
     type: string
     description: |
-      A token for referencing this operation.
+      A token for referencing the operation.
 
   state:
     enum:
@@ -73,14 +75,14 @@ properties:
       - canceled
       - running
     description: |
-      Describes the current state of an operation.
+      Describes the current state of the operation.
 ```
 
 ## Endpoint Descriptions
 
 ### Start Operation
 
-Start an arbitrary length operation. The response of the operation may be delivered synchronously (inline), or
+Start an arbitrary duration operation. The response of the operation may be delivered synchronously (inline), or
 asynchronously, via a provided callback or the [Get Operation Result](#get-operation-result) endpoint.
 
 **Path**: `/{service}/{operation}`
@@ -115,8 +117,8 @@ The body may contain arbitrary data. Headers should specify content type and enc
 
 #### Response Codes
 
-- `200 OK`: Operation completed successfully. It may return `Nexus-Link` headers to associate resources with this
-  operation.
+- `200 OK`: Operation completed successfully. It may return `Nexus-Link` headers linking to resources associated with
+  this operation.
 
   **Headers**:
 
@@ -131,7 +133,7 @@ The body may contain arbitrary data. Headers should specify content type and enc
 
   - `Content-Type: application/json`
 
-  **Body**: A JSON serialized [`OperationInfo`](#operationinfo) object.
+  **Body**: A JSON-serialized [`OperationInfo`](#operationinfo) object.
 
 - `424 Failed Dependency`: Operation completed as `failed` or `canceled`.
 
@@ -140,15 +142,15 @@ The body may contain arbitrary data. Headers should specify content type and enc
   - `Content-Type: application/json`
   - `Nexus-Operation-State: failed | canceled`
 
-  **Body**: A JSON serialized [`Failure`](#failure) object.
+  **Body**: A JSON-serialized [`Failure`](#failure) object.
 
-- `409 Conflict`: This operation was already started with a different request ID.
+- `409 Conflict`: Operation was already started with a different request ID.
 
   **Headers**:
 
   - `Content-Type: application/json`
 
-  **Body**: A JSON serialized [`Failure`](#failure) object.
+  **Body**: A JSON-serialized [`Failure`](#failure) object.
 
 ### Cancel Operation
 
@@ -161,8 +163,8 @@ ignore multiple cancelations of the same operation and return successfully if ca
 
 #### Request Headers
 
-The operation token received as a response to the Start Operation method. Must be delivered either via the `token` query
-param or the `Nexus-Operation-Token` header field.
+The operation token received as a response to the Start Operation method must be delivered either via the
+`Nexus-Operation-Token` header field or the `token` query param.
 
 #### Query Parameters
 
@@ -193,8 +195,8 @@ Retrieve operation result.
 
 #### Request Headers
 
-The operation token received as a response to the Start Operation method. Must be delivered either via the `token` query
-param or the `Nexus-Operation-Token` header field.
+The operation token received as a response to the Start Operation method must be delivered either via the
+`Nexus-Operation-Token` header field or the `token` query param.
 
 #### Query Parameters
 
@@ -202,7 +204,7 @@ param or the `Nexus-Operation-Token` header field.
   `token` query param or the `Nexus-Operation-Token` header field.
 
 - `wait`: Optional. Duration indicating the waiting period for a result, defaulting to no wait. If by the end of the
-  wait period the operation is still running, the request should resolve with a 412 status code (see below).
+  wait period the operation is still running, the request should resolve with a `412` status code (see below).
 
   Format of this parameter is number + unit, where unit can be `ms` for milliseconds, `s` for seconds, and `m` for
   minutes. Examples:
@@ -221,7 +223,7 @@ param or the `Nexus-Operation-Token` header field.
 
   **Body**: Arbitrary data conveying the operation's result. Headers should specify content type and encoding.
 
-- `408 Request Timeout`: The server gave up waiting for operation completion. The request may be retried by the caller.
+- `408 Request Timeout`: The handler gave up waiting for operation completion. The request may be retried by the caller.
 
   **Body**: Empty.
 
@@ -238,7 +240,7 @@ param or the `Nexus-Operation-Token` header field.
   - `Content-Type: application/json`
   - `Nexus-Operation-State: failed | canceled`
 
-  **Body**: A JSON serialized [`Failure`](#failure) object.
+  **Body**: A JSON-serialized [`Failure`](#failure) object.
 
 - `404 Not Found`: Operation token not recognized or references deleted.
 
@@ -246,7 +248,7 @@ param or the `Nexus-Operation-Token` header field.
 
   - `Content-Type: application/json`
 
-  **Body**: A JSON serialized [`Failure`](#failure) object.
+  **Body**: A JSON-serialized [`Failure`](#failure) object.
 
 ### Get Operation Info
 
@@ -258,8 +260,8 @@ Retrieve operation details.
 
 #### Request Headers
 
-The operation token received as a response to the Start Operation method. Must be delivered either via the `token` query
-param or the `Nexus-Operation-Token` header field.
+The operation token received as a response to the Start Operation method must be delivered either via the
+`Nexus-Operation-Token` header field or the `token` query param.
 
 #### Query Parameters
 
@@ -276,7 +278,7 @@ param or the `Nexus-Operation-Token` header field.
 
   **Body**:
 
-  A JSON serialized [`OperationInfo`](#operationinfo) object.
+  A JSON-serialized [`OperationInfo`](#operationinfo) object.
 
 - `404 Not Found`: Operation token not recognized or references deleted.
 
@@ -284,27 +286,27 @@ param or the `Nexus-Operation-Token` header field.
 
   - `Content-Type: application/json`
 
-  **Body**: A JSON serialized [`Failure`](#failure) object.
+  **Body**: A JSON-serialized [`Failure`](#failure) object.
 
 ## Predefined Handler Errors
 
 For compatiblity of this HTTP spec with future transports, when a handler fails a request, it **should** use one of the
 following predefined error codes.
 
-| Name                 | Status Code | Description                                                                                                                                                              |
-| -------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `BAD_REQUEST`        | 400         | The server cannot or will not process the request due to an apparent client error. Clients should not retry this request unless advised otherwise.                       |
-| `UNAUTHENTICATED`    | 401         | The client did not supply valid authentication credentials for this request. Clients should not retry this request unless advised otherwise.                             |
-|                      |             |                                                                                                                                                                          |
-| `UNAUTHORIZED`       | 403         | The caller does not have permission to execute the specified operation. Clients should not retry this request unless advised otherwise.                                  |
-|                      |             |                                                                                                                                                                          |
-| `NOT_FOUND`          | 404         | The requested resource could not be found but may be available in the future. Subsequent requests by the client are permissible but not advised.                         |
-|                      |             |                                                                                                                                                                          |
-| `RESOURCE_EXHAUSTED` | 429         | Some resource has been exhausted, perhaps a per-user quota, or perhaps the entire file system is out of space. Subsequent requests by the client are permissible.        |
-| `INTERNAL`           | 500         | An internal error occured. Subsequent requests by the client are permissible.                                                                                            |
-| `NOT_IMPLEMENTED`    | 501         | The server either does not recognize the request method, or it lacks the ability to fulfill the request. Clients should not retry this request unless advised otherwise. |
-| `UNAVAILABLE`        | 503         | The service is currently unavailable. Subsequent requests by the client are permissible.                                                                                 |
-| `UPSTREAM_TIMEOUT`   | 520         | Used by gateways to report that a request to an upstream server has timed out. Subsequent requests by the client are permissible.                                        |
+| Name                 | Status Code | Description                                                                                                                                                               |
+| -------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BAD_REQUEST`        | 400         | The handler cannot or will not process the request due to an apparent client error. Clients should not retry this request unless advised otherwise.                       |
+| `UNAUTHENTICATED`    | 401         | The client did not supply valid authentication credentials for this request. Clients should not retry this request unless advised otherwise.                              |
+|                      |             |                                                                                                                                                                           |
+| `UNAUTHORIZED`       | 403         | The caller does not have permission to execute the specified operation. Clients should not retry this request unless advised otherwise.                                   |
+|                      |             |                                                                                                                                                                           |
+| `NOT_FOUND`          | 404         | The requested resource could not be found but may be available in the future. Subsequent requests by the client are permissible but not advised.                          |
+|                      |             |                                                                                                                                                                           |
+| `RESOURCE_EXHAUSTED` | 429         | Some resource has been exhausted, perhaps a per-user quota, or perhaps the entire file system is out of space. Subsequent requests by the client are permissible.         |
+| `INTERNAL`           | 500         | An internal error occured. Subsequent requests by the client are permissible.                                                                                             |
+| `NOT_IMPLEMENTED`    | 501         | The handler either does not recognize the request method, or it lacks the ability to fulfill the request. Clients should not retry this request unless advised otherwise. |
+| `UNAVAILABLE`        | 503         | The service is currently unavailable. Subsequent requests by the client are permissible.                                                                                  |
+| `UPSTREAM_TIMEOUT`   | 520         | Used by gateways to report that a request to an upstream handler has timed out. Subsequent requests by the client are permissible.                                        |
 
 ## General Purpose Headers
 
@@ -313,7 +315,8 @@ following predefined error codes.
 The `Nexus-Link` header field provides a means for serializing one or more links in HTTP headers. This header is encoded
 the same way as the HTTP header `Link` described [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Link).
 
-Handlers and callers can specify links in different Nexus requests to associate an operation with arbitrary resources.
+Handlers and callers can specify links in Nexus requests and responses to associate an operation with arbitrary
+resources.
 
 Links must contain a `type` parameter that expresses how they should be parsed.
 
@@ -321,10 +324,9 @@ Links must contain a `type` parameter that expresses how they should be parsed.
 
 ### `Nexus-Request-Retryable`
 
-Handlers may specify the `Nexus-Request-Retryable` header to explicitly instruct a caller whether or not to retry a
-request. Unless specified, retry behavior is determined from the
-[predefined handler error type](#predefined-handler-errors). For example `INTERNAL` errors is not retryable by default
-unless specified otherwise.
+Handlers may specify the `Nexus-Request-Retryable` header with a value of `true` or `false` to explicitly instruct a
+caller whether or not to retry a request. Unless specified, retry behavior is determined by the
+[predefined handler error type](#predefined-handler-errors).
 
 ### `Request-Timeout`
 
