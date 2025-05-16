@@ -28,6 +28,8 @@ as part of a URL path make sure any special characters are encoded.
 
 ## Schema Definitions
 
+All schemas in this specification follow the [JSON Schema](https://json-schema.org/specification) specification.
+
 ### Failure
 
 The `Failure` object represents protocol-level failures returned in non-successful HTTP responses, as well as `failed` or
