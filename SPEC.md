@@ -32,8 +32,8 @@ All schemas in this specification follow the [JSON Schema](https://json-schema.o
 
 ### Failure
 
-The `Failure` object represents protocol-level failures returned in non-successful HTTP responses, as well as `failed` or
-`canceled` operation results. The object MUST adhere to the following schema:
+The `Failure` object represents protocol-level failures returned in non-successful HTTP responses, as well as `failed`
+or `canceled` operation results. The object MUST adhere to the following schema:
 
 ```yaml
 type: object
@@ -117,8 +117,8 @@ The body may contain arbitrary data. Headers should specify content type and enc
 
 #### Response Codes
 
-- `200 OK`: Operation completed successfully. It may return `Nexus-Link` headers linking to resources associated with this
-  operation.
+- `200 OK`: Operation completed successfully. It may return `Nexus-Link` headers linking to resources associated with
+  this operation.
 
   **Headers**:
 
@@ -293,19 +293,19 @@ The operation token received as a response to the Start Operation method must be
 For compatiblity of this HTTP spec with future transports, when a handler fails a request, it **should** use one of the
 following predefined error codes.
 
-| Name                 | Status Code | Description                                                                                                                                                              |
-| -------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Name                 | Status Code | Description                                                                                                                                                               |
+| -------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `BAD_REQUEST`        | 400         | The handler cannot or will not process the request due to an apparent client error. Clients should not retry this request unless advised otherwise.                       |
-| `UNAUTHENTICATED`    | 401         | The client did not supply valid authentication credentials for this request. Clients should not retry this request unless advised otherwise.                             |
-|                      |             |                                                                                                                                                                          |
-| `UNAUTHORIZED`       | 403         | The caller does not have permission to execute the specified operation. Clients should not retry this request unless advised otherwise.                                  |
-|                      |             |                                                                                                                                                                          |
-| `NOT_FOUND`          | 404         | The requested resource could not be found but may be available in the future. Subsequent requests by the client are permissible but not advised.                         |
-|                      |             |                                                                                                                                                                          |
-| `RESOURCE_EXHAUSTED` | 429         | Some resource has been exhausted, perhaps a per-user quota, or perhaps the entire file system is out of space. Subsequent requests by the client are permissible.        |
-| `INTERNAL`           | 500         | An internal error occured. Subsequent requests by the client are permissible.                                                                                            |
+| `UNAUTHENTICATED`    | 401         | The client did not supply valid authentication credentials for this request. Clients should not retry this request unless advised otherwise.                              |
+|                      |             |                                                                                                                                                                           |
+| `UNAUTHORIZED`       | 403         | The caller does not have permission to execute the specified operation. Clients should not retry this request unless advised otherwise.                                   |
+|                      |             |                                                                                                                                                                           |
+| `NOT_FOUND`          | 404         | The requested resource could not be found but may be available in the future. Subsequent requests by the client are permissible but not advised.                          |
+|                      |             |                                                                                                                                                                           |
+| `RESOURCE_EXHAUSTED` | 429         | Some resource has been exhausted, perhaps a per-user quota, or perhaps the entire file system is out of space. Subsequent requests by the client are permissible.         |
+| `INTERNAL`           | 500         | An internal error occured. Subsequent requests by the client are permissible.                                                                                             |
 | `NOT_IMPLEMENTED`    | 501         | The handler either does not recognize the request method, or it lacks the ability to fulfill the request. Clients should not retry this request unless advised otherwise. |
-| `UNAVAILABLE`        | 503         | The service is currently unavailable. Subsequent requests by the client are permissible.                                                                                 |
+| `UNAVAILABLE`        | 503         | The service is currently unavailable. Subsequent requests by the client are permissible.                                                                                  |
 | `UPSTREAM_TIMEOUT`   | 520         | Used by gateways to report that a request to an upstream handler has timed out. Subsequent requests by the client are permissible.                                        |
 
 ## General Purpose Headers
@@ -315,7 +315,8 @@ following predefined error codes.
 The `Nexus-Link` header field provides a means for serializing one or more links in HTTP headers. This header is encoded
 the same way as the HTTP header `Link` described [here](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Link).
 
-Handlers and callers can specify links in Nexus requests and responses to associate an operation with arbitrary resources.
+Handlers and callers can specify links in Nexus requests and responses to associate an operation with arbitrary
+resources.
 
 Links must contain a `type` parameter that expresses how they should be parsed.
 
@@ -324,8 +325,8 @@ Links must contain a `type` parameter that expresses how they should be parsed.
 ### `Nexus-Request-Retryable`
 
 Handlers may specify the `Nexus-Request-Retryable` header with a value of `true` or `false` to explicitly instruct a
-caller whether or not to retry a request. Unless specified, retry behavior is determined by the [predefined handler
-error type](#predefined-handler-errors).
+caller whether or not to retry a request. Unless specified, retry behavior is determined by the
+[predefined handler error type](#predefined-handler-errors).
 
 ### `Request-Timeout`
 
