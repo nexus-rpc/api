@@ -83,7 +83,7 @@ properties:
 ### Start Operation
 
 Start an arbitrary duration operation. The response of the operation may be delivered synchronously (inline), or
-asynchronously, via a provided callback or the [Get Operation Result](#get-operation-result) endpoint.
+asynchronously, via a provided callback or the [Fetch Operation Result](#fetch-operation-result) endpoint.
 
 **Path**: `/{service}/{operation}`
 
@@ -185,7 +185,7 @@ The operation token received as a response to the Start Operation method must be
 
   **Body**: A JSON serialized [`Failure`](#failure) object.
 
-### Get Operation Result
+### Fetch Operation Result
 
 Retrieve operation result.
 
@@ -250,7 +250,7 @@ The operation token received as a response to the Start Operation method must be
 
   **Body**: A JSON-serialized [`Failure`](#failure) object.
 
-### Get Operation Info
+### Fetch Operation Info
 
 Retrieve operation details.
 
