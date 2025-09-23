@@ -351,12 +351,11 @@ For invoking a callback URL:
   received:
     - `Nexus-Operation-Token`
     - `Nexus-Operation-Start-Time`
-    - `Nexus-Operation-Close-Time`
     - any `Nexus-Link` headers
 - The `Nexus-Operation-Start-Time` header should be in a valid HTTP format described
   [here](https://www.rfc-editor.org/rfc/rfc5322.html#section-3.3). If is omitted, the time the completion is received
   will be used as operation start time.
-- The `Nexus-Operation-Close-Time` header should be a [valid RFC 3339 format timestamp](https://datatracker.ietf.org/doc/html/rfc3339#section-5), with a resolution of milliseconds or finer.
+- Include a `Nexus-Operation-Close-Time` header, which should be a [valid RFC 3339 format timestamp](https://datatracker.ietf.org/doc/html/rfc3339#section-5), with a resolution of milliseconds or finer.
 - Include the `Nexus-Operation-State` header.
 - If state is `succeeded`, deliver non-empty results in the body with corresponding `Content-*` headers.
 - If state is `failed` or `canceled`, content type should be `application/json` and the body must have a serialized
