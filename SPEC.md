@@ -347,21 +347,20 @@ For invoking a callback URL:
 - Issue a POST request to the caller-provided URL.
 - Include any callback headers supplied in the originating StartOperation request, stripping away the `Nexus-Callback-`
   prefix.
-- Include the following headers for resources associated with this operation to support completing
-  asynchronous operations before the response to StartOperation is received:
-    - `Nexus-Operation-Token`
-    - `Nexus-Operation-Start-Time`
-    - any `Nexus-Link` headers
+- Include the following headers for resources associated with this operation to support completing asynchronous
+  operations before the response to StartOperation is received:
+  - `Nexus-Operation-Token`
+  - `Nexus-Operation-Start-Time`
+  - any `Nexus-Link` headers
 - The `Nexus-Operation-Start-Time` header should be in a valid HTTP format described
-  [here](https://www.rfc-editor.org/rfc/rfc5322.html#section-3.3). If is omitted, the time
-  the completion is received will be used as operation start time.
-- Include a `Nexus-Operation-Close-Time` header, indicating the time when the operation
-  completed (either successfully or unsuccessfully). The header's value must be a
-  [valid RFC 3339 format timestamp](https://datatracker.ietf.org/doc/html/rfc3339#section-5),
-  with a resolution of milliseconds or finer.
-  - RFC 3339 timestamps and ISO 8601 timestamps are usually compatible, but some edge
-    cases may apply [[1](https://protobuf.dev/programming-guides/json/#rfc3339),
-    [2](https://ijmacd.github.io/rfc3339-iso8601/)]. 
+  [here](https://www.rfc-editor.org/rfc/rfc5322.html#section-3.3). If is omitted, the time the completion is received
+  will be used as operation start time.
+- Include a `Nexus-Operation-Close-Time` header, indicating the time when the operation completed (either successfully
+  or unsuccessfully). The header's value must be a
+  [valid RFC 3339 format timestamp](https://datatracker.ietf.org/doc/html/rfc3339#section-5), with a resolution of
+  milliseconds or finer.
+  - RFC 3339 timestamps and ISO 8601 timestamps are usually compatible, but some edge cases may apply
+    [[1](https://protobuf.dev/programming-guides/json/#rfc3339), [2](https://ijmacd.github.io/rfc3339-iso8601/)].
 - Include the `Nexus-Operation-State` header.
 - If state is `succeeded`, deliver non-empty results in the body with corresponding `Content-*` headers.
 - If state is `failed` or `canceled`, content type should be `application/json` and the body must have a serialized
