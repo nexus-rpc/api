@@ -6,8 +6,8 @@ The Nexus protocol, as specified below, is a synchronous RPC protocol for system
 duration operations are modelled on top of a set of pre-defined synchronous RPCs.
 
 A Nexus **caller** calls a **handler**. The handler may respond inline (synchronous response) or return a token
-referencing the ongoing operation (asynchronous response), which the the caller use to cancel the operation. In lieu of a
-higher level service contract, the caller cannot determine whether an operation is going to resolve synchronously or
+referencing the ongoing operation (asynchronous response), which the the caller use to cancel the operation. In lieu of
+a higher level service contract, the caller cannot determine whether an operation is going to resolve synchronously or
 asynchronously, and should specify a callback URL, which the handler uses to deliver the result of an asynchronous
 operation when it is ready.
 
