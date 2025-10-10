@@ -226,7 +226,7 @@ Handler Error [`Failure`](#failure) representation is as follows:
 }
 ```
 
-#### Predefined Handler Errors
+### Predefined Handler Errors
 
 For compatiblity of this HTTP spec with future transports, when a handler fails a request, it **should** use one of the
 following predefined error codes.
