@@ -231,18 +231,19 @@ Handler Error [`Failure`](#failure) representation is as follows:
 For compatiblity of this HTTP spec with future transports, when a handler fails a request, it **should** use one of the
 following predefined error codes.
 
-| Name                 | Status Code | Description                                                                                                                                                                                       |
-| -------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `BAD_REQUEST`        | 400         | The handler cannot or will not process the request due to an apparent client error. Clients should not retry this request unless advised otherwise.                                               |
-| `UNAUTHENTICATED`    | 401         | The client did not supply valid authentication credentials for this request. Clients should not retry this request unless advised otherwise.                                                      |
-| `UNAUTHORIZED`       | 403         | The caller does not have permission to execute the specified operation. Clients should not retry this request unless advised otherwise.                                                           |
-| `NOT_FOUND`          | 404         | The requested resource could not be found but may be available in the future. Subsequent requests by the client are permissible but not advised.                                                  |
-| `CONFLICT`           | 409         | The request could not be made due to a conflict. The may happen when trying to create an operation that has already been started. Clients should not retry this request unless advised otherwise. |
-| `RESOURCE_EXHAUSTED` | 429         | Some resource has been exhausted, perhaps a per-user quota, or perhaps the entire file system is out of space. Subsequent requests by the client are permissible.                                 |
-| `INTERNAL`           | 500         | An internal error occured. Subsequent requests by the client are permissible.                                                                                                                     |
-| `NOT_IMPLEMENTED`    | 501         | The handler either does not recognize the request method, or it lacks the ability to fulfill the request. Clients should not retry this request unless advised otherwise.                         |
-| `UNAVAILABLE`        | 503         | The service is currently unavailable. Subsequent requests by the client are permissible.                                                                                                          |
-| `UPSTREAM_TIMEOUT`   | 520         | Used by gateways to report that a request to an upstream handler has timed out. Subsequent requests by the client are permissible.                                                                |
+| Name                 | Status Code | Description                                                                                                                                                                                                                                                 |
+| -------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BAD_REQUEST`        | 400         | The handler cannot or will not process the request due to an apparent client error. Clients should not retry this request unless advised otherwise.                                                                                                         |
+| `UNAUTHENTICATED`    | 401         | The client did not supply valid authentication credentials for this request. Clients should not retry this request unless advised otherwise.                                                                                                                |
+| `UNAUTHORIZED`       | 403         | The caller does not have permission to execute the specified operation. Clients should not retry this request unless advised otherwise.                                                                                                                     |
+| `NOT_FOUND`          | 404         | The requested resource could not be found but may be available in the future. Subsequent requests by the client are permissible but not advised.                                                                                                            |
+| `REQUEST_TIMEOUT`    | 408         | Returned by the server to when it has given up handling a request. The may occur by enforcing a client provided `Request-Timeout` or for any arbitrary reason such as enforcing some configurable limit. Subsequent requests by the client are permissible. |
+| `CONFLICT`           | 409         | The request could not be made due to a conflict. The may happen when trying to create an operation that has already been started. Clients should not retry this request unless advised otherwise.                                                           |
+| `RESOURCE_EXHAUSTED` | 429         | Some resource has been exhausted, perhaps a per-user quota, or perhaps the entire file system is out of space. Subsequent requests by the client are permissible.                                                                                           |
+| `INTERNAL`           | 500         | An internal error occured. Subsequent requests by the client are permissible.                                                                                                                                                                               |
+| `NOT_IMPLEMENTED`    | 501         | The handler either does not recognize the request method, or it lacks the ability to fulfill the request. Clients should not retry this request unless advised otherwise.                                                                                   |
+| `UNAVAILABLE`        | 503         | The service is currently unavailable. Subsequent requests by the client are permissible.                                                                                                                                                                    |
+| `UPSTREAM_TIMEOUT`   | 520         | Used by gateways to report that a request to an upstream handler has timed out. Subsequent requests by the client are permissible.                                                                                                                          |
 
 Client implementations should try to rehydrate a `HandlerError` from the serialized `Failure` object in the response
 body whenever a request fails with one of the status codes listed below. If the handler error type in the `Failure`
@@ -279,13 +280,6 @@ a response.
 
 Format of this header value is number + unit, where unit can be `ms` for milliseconds, `s` for seconds, and `m` for
 minutes.
-
-## General Purpose Response Codes
-
-### `408 Request Timeout`
-
-Returned by the server to when it has given up handling a request. The may occur by enforcing a client provided
-`Request-Timeout` or for any arbitrary reason such as enforcing some configurable limit.
 
 ## Callback URLs
 
