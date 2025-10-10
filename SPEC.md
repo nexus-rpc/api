@@ -2,13 +2,14 @@
 
 ## Overview
 
-The Nexus protocol, as specified below, is a synchronous RPC protocol. Arbitrary duration operations are modelled on top
-of a set of pre-defined synchronous RPCs.
+The Nexus protocol, as specified below, is a synchronous RPC protocol for system-to-system integration. Arbitrary
+duration operations are modelled on top of a set of pre-defined synchronous RPCs.
 
 A Nexus **caller** calls a **handler**. The handler may respond inline (synchronous response) or return a token
-referencing the ongoing operation (asynchronous response). The caller can cancel an asynchronous operation, check for
-its outcome, or fetch its current state. The caller can also specify a callback URL, which the handler uses to deliver
-the result of an asynchronous operation when it is ready.
+referencing the ongoing operation (asynchronous response), which the the caller use to cancel the operation. I lieu of a
+higher level service contract, the caller cannot determine unless an operation is going to resolve synchronously or
+asynchronously, and should specify a callback URL, which the handler uses to deliver the result of an asynchronous
+operation when it is ready.
 
 ## Operation Addressability
 
@@ -184,109 +185,6 @@ The operation token received as a response to the Start Operation method must be
   - `Content-Type: application/json`
 
   **Body**: A JSON serialized [`Failure`](#failure) object.
-
-### Fetch Operation Result
-
-Retrieve operation result.
-
-**Path**: `/{service}/{operation}/result`
-
-**Method**: `GET`
-
-#### Request Headers
-
-The operation token received as a response to the Start Operation method must be delivered either via the
-`Nexus-Operation-Token` header field or the `token` query param.
-
-#### Query Parameters
-
-- `token`: The operation token received as a response to the Start Operation method. Must be delivered either via the
-  `token` query param or the `Nexus-Operation-Token` header field.
-
-- `wait`: Optional. Duration indicating the waiting period for a result, defaulting to no wait. If by the end of the
-  wait period the operation is still running, the request should resolve with a `412` status code (see below).
-
-  Format of this parameter is number + unit, where unit can be `ms` for milliseconds, `s` for seconds, and `m` for
-  minutes. Examples:
-
-  - `100ms`
-  - `1m`
-  - `5s`
-
-#### Response Codes
-
-- `200 OK`: Operation completed successfully.
-
-  **Headers**:
-
-  - `Nexus-Operation-State: succeeded`
-
-  **Body**: Arbitrary data conveying the operation's result. Headers should specify content type and encoding.
-
-- `408 Request Timeout`: The handler gave up waiting for operation completion. The request may be retried by the caller.
-
-  **Body**: Empty.
-
-- `412 Precondition Failed`: Operation still running.
-
-  When waiting for completion, the caller may re-issue this request to start a new long poll.
-
-  **Body**: Empty.
-
-- `424 Failed Dependency`: Operation completed as `failed` or `canceled`.
-
-  **Headers**:
-
-  - `Content-Type: application/json`
-  - `Nexus-Operation-State: failed | canceled`
-
-  **Body**: A JSON-serialized [`Failure`](#failure) object.
-
-- `404 Not Found`: Operation token not recognized or references deleted.
-
-  **Headers**:
-
-  - `Content-Type: application/json`
-
-  **Body**: A JSON-serialized [`Failure`](#failure) object.
-
-### Fetch Operation Info
-
-Retrieve operation details.
-
-**Path**: `/{service}/{operation}`
-
-**Method**: `GET`
-
-#### Request Headers
-
-The operation token received as a response to the Start Operation method must be delivered either via the
-`Nexus-Operation-Token` header field or the `token` query param.
-
-#### Query Parameters
-
-- `token`: The operation token received as a response to the Start Operation method. Must be delivered either via the
-  `token` query param or the `Nexus-Operation-Token` header field.
-
-#### Response Codes
-
-- `200 OK`: Successfully retrieved info.
-
-  **Headers**:
-
-  - `Content-Type: application/json`
-
-  **Body**:
-
-  A JSON-serialized [`OperationInfo`](#operationinfo) object.
-
-- `404 Not Found`: Operation token not recognized or references deleted.
-
-  **Headers**:
-
-  - `Content-Type: application/json`
-
-  **Body**: A JSON-serialized [`Failure`](#failure) object.
 
 ## Predefined Handler Errors
 
