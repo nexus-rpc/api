@@ -315,7 +315,6 @@ For invoking a callback URL:
   or unsuccessfully). The header's value must be a
   [valid RFC 3339 format timestamp](https://datatracker.ietf.org/doc/html/rfc3339#section-5), with a resolution of
   milliseconds or finer.
-
   - RFC 3339 timestamps and ISO 8601 timestamps are usually compatible, but some edge cases may apply
     [[1](https://protobuf.dev/programming-guides/json/#rfc3339), [2](https://ijmacd.github.io/rfc3339-iso8601/)].
 - Include the `Nexus-Operation-State` header.
