@@ -319,7 +319,7 @@ For invoking a callback URL:
   - RFC 3339 timestamps and ISO 8601 timestamps are usually compatible, but some edge cases may apply
     [[1](https://protobuf.dev/programming-guides/json/#rfc3339), [2](https://ijmacd.github.io/rfc3339-iso8601/)].
 - Include the `Nexus-Operation-State` header.
-- If state is `succeeded`, deliver non-empty results in the body with corresponding `Content-*` headers. 
+- If state is `succeeded`, deliver non-empty results in the body with corresponding `Content-*` headers.
 - If state is `failed` or `canceled`, content type should be `application/json` and the body must have a serialized
   [`Failure`](#failure) object.
 
