@@ -161,7 +161,7 @@ The body may contain arbitrary data. Headers should specify content type and enc
 ### Cancel Operation
 
 Request to cancel an operation. The operation may later complete as canceled or any other outcome. Handlers should
-ignore multiple cancelations of the same operation and return successfully if cancelation was already requested.
+ignore multiple cancellations of the same operation and return successfully if cancellation was already requested.
 
 **Path**: `/{service}/{operation}/cancel`
 

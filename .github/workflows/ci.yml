@@ -16,3 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dprint/check@v2.2
+
+  typos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: crate-ci/typos@master
