@@ -304,7 +304,6 @@ For invoking a callback URL:
 
 - Include the following headers for resources associated with this operation to support completing asynchronous
   operations before the response to StartOperation is received:
-
   - `Nexus-Operation-Token`
   - `Nexus-Operation-Start-Time`
   - any `Nexus-Link` headers
