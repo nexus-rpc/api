@@ -298,7 +298,7 @@ For invoking a callback URL:
 - Include any callback headers supplied in the originating StartOperation request, stripping away the `Nexus-Callback-`
   prefix.
 
-* The callback request **MUST include** a `Token` header derived from the required `Nexus-Callback-Token` header in the
+- The callback request **MUST include** a `Token` header derived from the required `Nexus-Callback-Token` header in the
   originating StartOperation request. This header uniquely associates the callback with its originating operation and is
   mandatory for all callback deliveries.
 
