@@ -6,7 +6,7 @@ The Nexus protocol, as specified below, is a synchronous RPC protocol for system
 duration operations are modelled on top of a set of pre-defined synchronous RPCs.
 
 A Nexus **caller** calls a **handler**. The handler may respond inline (synchronous response) or return a token
-referencing the ongoing operation (asynchronous response), which the the caller use to cancel the operation. In lieu of
+referencing the ongoing operation (asynchronous response), which the caller may use to cancel the operation. In lieu of
 a higher level service contract, the caller cannot determine whether an operation is going to resolve synchronously or
 asynchronously, and should specify a callback URL, which the handler uses to deliver the result of an asynchronous
 operation when it is ready.
@@ -111,6 +111,11 @@ Headers that start with the `Nexus-Callback-` prefix are expected to be attached
 the handler. The callback request must strip away the `Nexus-Callback-` prefix. E.g if a Start Operation request
 includes a `Nexus-Callback-Token: some-token` header, the callback request would include a `Token: some-token` header.
 
+The `Nexus-Callback-Token` header is **REQUIRED**.
+It MUST contain a caller-generated token that uniquely identifies the originating operation.
+Handlers MUST include this header’s value as a `Token` header in all callback requests to the caller-provided `callback`
+URL. This header allows correlation between callback requests and their originating operations.
+
 The `Operation-Timeout` header field can be added to inform the handler how long the caller is willing to wait for an
 operation to complete. This is distinct from the more general `Request-Timeout` header which is used to indicate the
 timeout for a single HTTP request. Format of this header value is number + unit, where unit can be `ms` for
@@ -197,7 +202,7 @@ Operation Error [`Failure`](#failure) representation is as follows:
   "cause": { /* <Optional cause> */ },
   "details": {
     "state": "canceled | failed",
-    // Aribtrary details may be added here as needed.
+    // Arbitrary details may be added here as needed.
   },
 }
 ```
@@ -221,14 +226,14 @@ Handler Error [`Failure`](#failure) representation is as follows:
   "details": {
     "type": "<predefined error type (e.g. INTERNAL)",
     // "retryableOverride": Optional boolean.
-    // Aribtrary details may be added here as needed.
+    // Arbitrary details may be added here as needed.
   },
 }
 ```
 
 ### Predefined Handler Errors
 
-For compatiblity of this HTTP spec with future transports, when a handler fails a request, it **should** use one of the
+For compatibility of this HTTP spec with future transports, when a handler fails a request, it **should** use one of the
 following predefined error codes.
 
 | Name                 | Status Code | Description                                                                                                                                                                                                                                                 |
@@ -237,17 +242,17 @@ following predefined error codes.
 | `UNAUTHENTICATED`    | 401         | The client did not supply valid authentication credentials for this request. Clients should not retry this request unless advised otherwise.                                                                                                                |
 | `UNAUTHORIZED`       | 403         | The caller does not have permission to execute the specified operation. Clients should not retry this request unless advised otherwise.                                                                                                                     |
 | `NOT_FOUND`          | 404         | The requested resource could not be found but may be available in the future. Subsequent requests by the client are permissible but not advised.                                                                                                            |
-| `REQUEST_TIMEOUT`    | 408         | Returned by the server to when it has given up handling a request. The may occur by enforcing a client provided `Request-Timeout` or for any arbitrary reason such as enforcing some configurable limit. Subsequent requests by the client are permissible. |
-| `CONFLICT`           | 409         | The request could not be made due to a conflict. The may happen when trying to create an operation that has already been started. Clients should not retry this request unless advised otherwise.                                                           |
+| `REQUEST_TIMEOUT`    | 408         | Returned by the server to when it has given up handling a request. This may occur by enforcing a client provided `Request-Timeout` or for any arbitrary reason such as enforcing some configurable limit. Subsequent requests by the client are permissible. |
+| `CONFLICT`           | 409         | The request could not be made due to a conflict. This may happen when trying to create an operation that has already been started. Clients should not retry this request unless advised otherwise.                                                           |
 | `RESOURCE_EXHAUSTED` | 429         | Some resource has been exhausted, perhaps a per-user quota, or perhaps the entire file system is out of space. Subsequent requests by the client are permissible.                                                                                           |
-| `INTERNAL`           | 500         | An internal error occured. Subsequent requests by the client are permissible.                                                                                                                                                                               |
+| `INTERNAL`           | 500         | An internal error occurred. Subsequent requests by the client are permissible.                                                                                                                                                                               |
 | `NOT_IMPLEMENTED`    | 501         | The handler either does not recognize the request method, or it lacks the ability to fulfill the request. Clients should not retry this request unless advised otherwise.                                                                                   |
 | `UNAVAILABLE`        | 503         | The service is currently unavailable. Subsequent requests by the client are permissible.                                                                                                                                                                    |
 | `UPSTREAM_TIMEOUT`   | 520         | Used by gateways to report that a request to an upstream handler has timed out. Subsequent requests by the client are permissible.                                                                                                                          |
 
 Client implementations should try to rehydrate a `HandlerError` from the serialized `Failure` object in the response
 body whenever a request fails with one of the status codes listed below. If the handler error type in the `Failure`
-object details doesn't match the response status code, the `Failure` object takes precendence.
+object details doesn't match the response status code, the `Failure` object takes precedence.
 
 If the serialized `Failure` does not represent a `HandlerError`, clients should construct a wrapper `HandlerError`,
 setting the response `Failure` as the `cause` (if available) translating the response status code to the `HandlerError`
@@ -292,25 +297,30 @@ For invoking a callback URL:
 - Issue a POST request to the caller-provided URL.
 - Include any callback headers supplied in the originating StartOperation request, stripping away the `Nexus-Callback-`
   prefix.
+* The callback request **MUST include** a `Token` header derived from the required `Nexus-Callback-Token` header in the
+  originating StartOperation request. This header uniquely associates the callback with its originating operation and is mandatory for all callback
+  deliveries.
 - Include the following headers for resources associated with this operation to support completing asynchronous
   operations before the response to StartOperation is received:
+
   - `Nexus-Operation-Token`
   - `Nexus-Operation-Start-Time`
   - any `Nexus-Link` headers
 - The `Nexus-Operation-Start-Time` header should be in a valid HTTP format described
-  [here](https://www.rfc-editor.org/rfc/rfc5322.html#section-3.3). If is omitted, the time the completion is received
-  will be used as operation start time.
+  [here](https://www.rfc-editor.org/rfc/rfc5322.html#section-3.3). If omitted, the time the completion is received will
+  be used as operation start time.
 - Include a `Nexus-Operation-Close-Time` header, indicating the time when the operation completed (either successfully
   or unsuccessfully). The header's value must be a
   [valid RFC 3339 format timestamp](https://datatracker.ietf.org/doc/html/rfc3339#section-5), with a resolution of
   milliseconds or finer.
+
   - RFC 3339 timestamps and ISO 8601 timestamps are usually compatible, but some edge cases may apply
     [[1](https://protobuf.dev/programming-guides/json/#rfc3339), [2](https://ijmacd.github.io/rfc3339-iso8601/)].
 - Include the `Nexus-Operation-State` header.
 - If state is `succeeded`, deliver non-empty results in the body with corresponding `Content-*` headers.
-- If state is `failed` or `canceled`, content type should be `application/json` and the body must have a serialized
+ If state is `failed` or `canceled`, content type should be `application/json` and the body must have a serialized
   [`Failure`](#failure) object.
-- Upon successful completion delivery, the handler should reply with a `200 OK` status and an empty body.
+* Upon successful completion delivery, the handler should reply with a `200 OK` status and an empty body.
 
 ### Security
 
