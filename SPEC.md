@@ -322,7 +322,6 @@ For invoking a callback URL:
 - If state is `succeeded`, deliver non-empty results in the body with corresponding `Content-*` headers.
 - If state is `failed` or `canceled`, content type should be `application/json` and the body must have a serialized
   [`Failure`](#failure) object.
-
 - Upon successful completion delivery, the handler should reply with a `200 OK` status and an empty body.
 
 ### Security
