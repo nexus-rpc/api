@@ -111,7 +111,7 @@ Headers that start with the `Nexus-Callback-` prefix are expected to be attached
 the handler. The callback request must strip away the `Nexus-Callback-` prefix. E.g if a Start Operation request
 includes a `Nexus-Callback-Token: some-token` header, the callback request would include a `Token: some-token` header.
 
-The `Nexus-Callback-Token` header is **REQUIRED**. It MUST contain a caller-generated token that uniquely identifies the
+If a callback query parameter is provided, the `Nexus-Callback-Token` header is **REQUIRED**. It MUST contain a caller-generated token that uniquely identifies the
 originating operation. Handlers MUST include this header’s value as a `Token` header in all callback requests to the
 caller-provided `callback` URL. This header allows correlation between callback requests and their originating
 operations.
