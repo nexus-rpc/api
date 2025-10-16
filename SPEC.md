@@ -112,12 +112,11 @@ the handler. The callback request must strip away the `Nexus-Callback-` prefix. 
 includes a `Nexus-Callback-Token: some-token` header, the callback request would include a `Token: some-token` header.
 
 If a callback query parameter is provided, the `Nexus-Callback-Token` header is **REQUIRED**. It MUST contain a
-caller-generated token that is used to recreate context when processing the callback. Handlers MUST include this header’s value as
-a `Token` header when invoking Callback requests.
-The `Operation-Timeout` header field can be added to inform the handler how long the caller is willing to wait for an
-operation to complete. This is distinct from the more general `Request-Timeout` header which is used to indicate the
-timeout for a single HTTP request. Format of this header value is number + unit, where unit can be `ms` for
-milliseconds, `s` for seconds, and `m` for minutes.
+caller-generated token that is used to recreate context when processing the callback. Handlers MUST include this
+header’s value as a `Token` header when invoking Callback requests. The `Operation-Timeout` header field can be added to
+inform the handler how long the caller is willing to wait for an operation to complete. This is distinct from the more
+general `Request-Timeout` header which is used to indicate the timeout for a single HTTP request. Format of this header
+value is number + unit, where unit can be `ms` for milliseconds, `s` for seconds, and `m` for minutes.
 
 The `Nexus-Link` header field can be added to associate resources with the start request. A handler may attach these
 links as metadata to underlying resources to provide end-to-end observability. See the [`Nexus-Link`](#nexus-link)
