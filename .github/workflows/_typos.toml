@@ -1,0 +1,18 @@
+# Configuration for typos spell checker
+# See: https://github.com/crate-ci/typos
+
+[default]
+# Ensure we check binary file names
+binary = false
+
+
+[default.extend-words]
+# Add custom dictionary entries here for intentional "misspellings" used in the codebase
+# Common Go/Nexus specific terms that may be flagged as typos
+cancelation = "cancelation"  # Common alternate spelling of cancellation used in the spec
+
+[files]
+extend-exclude = [
+  "*.svg",
+]
+
